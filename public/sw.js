@@ -21,6 +21,7 @@ const PRECACHE_SHELL_ASSETS = [
   '/logo-icon.png',
   '/logo.png',
   '/logo-full.jpg',
+  '/images/panel-cover.jpg',
   '/robots.txt'
 ];
 

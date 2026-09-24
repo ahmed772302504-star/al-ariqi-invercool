@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
-import { ThemeToggle } from './ThemeToggle.js';
 import {
   Phone,
   MessageCircle,
@@ -501,9 +500,6 @@ export const FloatingContact: React.FC<FloatingContactProps> = ({ navigate }) =>
         ref={menuRef}
         className="fixed bottom-24 sm:bottom-8 end-4 sm:end-8 z-40 flex flex-col items-end gap-3"
       >
-        {/* Quick Accessibility Theme Toggle */}
-        <ThemeToggle variant="floating" />
-
         {/* Primary Floating WhatsApp Trigger Button */}
         <button
           type="button"

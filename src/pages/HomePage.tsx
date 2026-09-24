@@ -6,6 +6,7 @@ import { api } from '../services/api.js';
 import { Service, Product, Project, Review, SiteSettings } from '../types.js';
 import { SubServicesGrid } from '../components/common/SubServicesGrid.js';
 import { ServiceIcon } from '../components/common/ServiceIcon.js';
+import { ElectricalPanelsSection } from '../components/home/ElectricalPanelsSection.js';
 import {
   Wrench,
   ShieldCheck,
@@ -457,6 +458,9 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
           })}
         </div>
       </section>
+
+      {/* 3.5 ELECTRICAL CONTROL & ALARM PANELS DIVISION (الطبالين واللوحات الكهربائية) */}
+      <ElectricalPanelsSection navigate={navigate} />
 
       {/* 4. WHY CHOOSE US (لماذا العريقي إنفركول؟) */}
       <section className="bg-[#0B192C] text-white py-16 border-y border-slate-800">
