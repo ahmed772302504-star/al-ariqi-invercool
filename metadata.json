@@ -1,0 +1,8 @@
+{
+  "name": "Remix Al-Arriqi Invercool Solutions",
+  "description": "Professional HVAC and central refrigeration platform providing integrated engineering solutions for industrial and commercial cooling needs in Yemen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

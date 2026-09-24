@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060E18"/>
+      <stop offset="60%" stop-color="#0B192C"/>
+      <stop offset="100%" stop-color="#142842"/>
+    </linearGradient>
+
+    <!-- Metallic Copper / Gold Gradient -->
+    <linearGradient id="bronzeGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3C38B"/>
+      <stop offset="40%" stop-color="#C87D55"/>
+      <stop offset="70%" stop-color="#A4552A"/>
+      <stop offset="100%" stop-color="#E5AA70"/>
+    </linearGradient>
+
+    <!-- Steel / Air Flow Blue Gradient -->
+    <linearGradient id="airFlowBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1E3E62"/>
+      <stop offset="50%" stop-color="#4F8FC4"/>
+      <stop offset="100%" stop-color="#9BCBF5"/>
+    </linearGradient>
+
+    <linearGradient id="iceSnowflake" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#CBE5FA"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Base container with premium rounded edges -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+
+  <!-- Ornate Industrial Outer Frame Geometry -->
+  <g filter="url(#shadow)">
+    <!-- Outer Octagonal / Tiered Frame matching emblem -->
+    <rect x="116" y="80" width="280" height="352" rx="20" fill="none" stroke="url(#bronzeGold)" stroke-width="4" opacity="0.6"/>
+    <rect x="80" y="116" width="352" height="280" rx="20" fill="none" stroke="url(#bronzeGold)" stroke-width="4" opacity="0.6"/>
+
+    <!-- Concentric Turbine Outer Rings -->
+    <circle cx="256" cy="256" r="172" fill="#0B192C" stroke="url(#bronzeGold)" stroke-width="10"/>
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#25466D" stroke-width="3" stroke-dasharray="8 6"/>
+    <circle cx="256" cy="256" r="138" fill="none" stroke="url(#bronzeGold)" stroke-width="4" opacity="0.8"/>
+
+    <!-- 4 Diagonal Engineering Brackets with Brass Rivets -->
+    <g stroke="url(#bronzeGold)" stroke-width="8" stroke-linecap="round">
+      <!-- Top-Left -->
+      <line x1="140" y1="140" x2="185" y2="185" />
+      <circle cx="132" cy="132" r="6" fill="url(#bronzeGold)" stroke="none"/>
+      <!-- Top-Right -->
+      <line x1="372" y1="140" x2="327" y2="185" />
+      <circle cx="380" cy="132" r="6" fill="url(#bronzeGold)" stroke="none"/>
+      <!-- Bottom-Left -->
+      <line x1="140" y1="372" x2="185" y2="327" />
+      <circle cx="132" cy="380" r="6" fill="url(#bronzeGold)" stroke="none"/>
+      <!-- Bottom-Right -->
+      <line x1="372" y1="372" x2="327" y2="327" />
+      <circle cx="380" cy="380" r="6" fill="url(#bronzeGold)" stroke="none"/>
+    </g>
+
+    <!-- Side Aerodynamic Wind Waves / Airflow Swirls -->
+    <!-- Left Wind Ribbon -->
+    <path d="M45,260 C80,210 130,285 200,240 C140,245 95,225 60,250 C30,270 40,320 80,310 C100,305 110,285 95,275 C85,270 70,280 75,290" 
+          fill="none" stroke="url(#airFlowBlue)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M75,230 C110,215 150,265 210,235" 
+          fill="none" stroke="url(#bronzeGold)" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+
+    <!-- Right Wind Ribbon -->
+    <path d="M467,260 C432,210 382,285 312,240 C372,245 417,225 452,250 C482,270 472,320 432,310 C412,305 402,285 417,275 C427,270 442,280 437,290" 
+          fill="none" stroke="url(#airFlowBlue)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M437,230 C402,215 362,265 302,235" 
+          fill="none" stroke="url(#bronzeGold)" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+
+    <!-- 6 Curved Inverter Aerodynamic Impeller Fan Blades -->
+    <g id="turbineBlades">
+      <!-- Blade 1 -->
+      <path d="M256,256 C260,180 220,150 240,118 C265,130 280,170 270,210 Z" fill="url(#airFlowBlue)" stroke="url(#bronzeGold)" stroke-width="3"/>
+      <!-- Blade 2 -->
+      <path d="M256,256 C320,240 345,190 375,205 C360,230 330,265 285,265 Z" fill="url(#airFlowBlue)" stroke="url(#bronzeGold)" stroke-width="3"/>
+      <!-- Blade 3 -->
+      <path d="M256,256 C290,320 325,335 320,370 C295,360 265,335 255,290 Z" fill="url(#airFlowBlue)" stroke="url(#bronzeGold)" stroke-width="3"/>
+      <!-- Blade 4 -->
+      <path d="M256,256 C240,332 270,365 250,395 C230,380 215,340 230,300 Z" fill="url(#airFlowBlue)" stroke="url(#bronzeGold)" stroke-width="3"/>
+      <!-- Blade 5 -->
+      <path d="M256,256 C190,270 165,320 135,305 C150,280 180,245 225,245 Z" fill="url(#airFlowBlue)" stroke="url(#bronzeGold)" stroke-width="3"/>
+      <!-- Blade 6 -->
+      <path d="M256,256 C220,190 185,175 190,140 C215,150 245,175 255,220 Z" fill="url(#airFlowBlue)" stroke="url(#bronzeGold)" stroke-width="3"/>
+    </g>
+
+    <!-- Center Emblem: Tear-drop Coolant Droplet with Golden Border -->
+    <g filter="url(#shadow)">
+      <!-- Droplet Outer Gold Boundary -->
+      <path d="M256,132 C256,132 188,242 188,284 C188,322 218,352 256,352 C294,352 324,322 324,284 C324,242 256,132 256,132 Z" 
+            fill="#0B192C" stroke="url(#bronzeGold)" stroke-width="10" stroke-linejoin="round"/>
+
+      <!-- Droplet Inner Glow Border -->
+      <path d="M256,148 C256,148 198,246 198,284 C198,316 224,342 256,342 C288,342 314,316 314,284 C314,246 256,148 256,148 Z" 
+            fill="#10253F" stroke="url(#bronzeGold)" stroke-width="3"/>
+
+      <!-- Snowflake Cooling Crystal Inside Droplet -->
+      <!-- Main vertical and cross branches -->
+      <g stroke="url(#bronzeGold)" stroke-width="5" stroke-linecap="round">
+        <line x1="256" y1="230" x2="256" y2="322"/>
+        <line x1="218" y1="255" x2="294" y2="298"/>
+        <line x1="218" y1="298" x2="294" y2="255"/>
+
+        <!-- Snowflake sub-prongs (V-shapes) -->
+        <!-- Top branch prongs -->
+        <line x1="244" y1="245" x2="256" y2="236"/>
+        <line x1="268" y1="245" x2="256" y2="236"/>
+        <!-- Bottom branch prongs -->
+        <line x1="244" y1="308" x2="256" y2="318"/>
+        <line x1="268" y1="308" x2="256" y2="318"/>
+        <!-- Diagonal 1 prongs -->
+        <line x1="228" y1="272" x2="222" y2="260"/>
+        <line x1="284" y1="282" x2="290" y2="294"/>
+        <!-- Diagonal 2 prongs -->
+        <line x1="228" y1="282" x2="222" y2="294"/>
+        <line x1="284" y1="272" x2="290" y2="260"/>
+      </g>
+
+      <!-- Center Snowflake Core Diamond -->
+      <circle cx="256" cy="276" r="6" fill="#FFFFFF"/>
+    </g>
+  </g>
+</svg>
