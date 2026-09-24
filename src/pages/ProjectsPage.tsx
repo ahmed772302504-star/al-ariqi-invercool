@@ -3,6 +3,8 @@ import { useLanguage } from '../context/LanguageContext.js';
 import { api } from '../services/api.js';
 import { Project } from '../types.js';
 import { Building, MapPin, Search, Calendar, ChevronRight, X, Play } from 'lucide-react';
+import { staticProjects } from '../data/staticProjects.js';
+import { staticGovernates } from '../data/staticSettings.js';
 
 interface ProjectsPageProps {
   navigate: (route: string, param?: string) => void;
@@ -10,10 +12,10 @@ interface ProjectsPageProps {
 
 export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
   const { language, t } = useLanguage();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [governates, setGovernates] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>(staticProjects);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>(staticProjects);
+  const [governates, setGovernates] = useState<string[]>(staticGovernates);
+  const [loading, setLoading] = useState(false);
 
   // Filters
   const [selectedGov, setSelectedGov] = useState('all');
@@ -31,12 +33,14 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ navigate }) => {
 
   useEffect(() => {
     Promise.all([
-      api.getProjects(),
-      api.getGovernates()
+      api.getProjects().catch(() => staticProjects),
+      api.getGovernates().catch(() => staticGovernates)
     ]).then(([prjs, govs]) => {
-      setProjects(prjs);
-      setFilteredProjects(prjs);
-      setGovernates(govs);
+      if (Array.isArray(prjs) && prjs.length > 0) {
+        setProjects(prjs);
+        setFilteredProjects(prjs);
+      }
+      if (Array.isArray(govs) && govs.length > 0) setGovernates(govs);
       setLoading(false);
     });
   }, []);

@@ -7,6 +7,11 @@ import { Service, Product, Project, Review, SiteSettings } from '../types.js';
 import { SubServicesGrid } from '../components/common/SubServicesGrid.js';
 import { ServiceIcon } from '../components/common/ServiceIcon.js';
 import { ElectricalPanelsSection } from '../components/home/ElectricalPanelsSection.js';
+import { staticServices } from '../data/staticServices.js';
+import { staticProducts } from '../data/staticProducts.js';
+import { staticProjects } from '../data/staticProjects.js';
+import { staticReviews } from '../data/staticReviews.js';
+import { staticGovernates } from '../data/staticSettings.js';
 import {
   Wrench,
   ShieldCheck,
@@ -35,26 +40,30 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
   const { language, t } = useLanguage();
   const { isLight } = useTheme();
   const { settings, logoUrl, logoIconUrl, watermarkUrl, getCacheBusted } = useSettings();
-  const [services, setServices] = useState<Service[]>([]);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [governates, setGovernates] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState<Service[]>(staticServices);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(() =>
+    staticProducts.filter((p) => p.isFeatured)
+  );
+  const [featuredProjects, setFeaturedProjects] = useState<Project[]>(() =>
+    staticProjects.filter((p) => p.isFeatured)
+  );
+  const [reviews, setReviews] = useState<Review[]>(staticReviews);
+  const [governates, setGovernates] = useState<string[]>(staticGovernates);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
-      api.getServices().catch(() => []),
-      api.getProducts({ featured: true }).catch(() => []),
-      api.getProjects({ featured: true }).catch(() => []),
-      api.getApprovedReviews().catch(() => []),
-      api.getGovernates().catch(() => [])
+      api.getServices().catch(() => staticServices),
+      api.getProducts({ featured: true }).catch(() => staticProducts.filter((p) => p.isFeatured)),
+      api.getProjects({ featured: true }).catch(() => staticProjects.filter((p) => p.isFeatured)),
+      api.getApprovedReviews().catch(() => staticReviews),
+      api.getGovernates().catch(() => staticGovernates)
     ]).then(([srvs, prods, prjs, revs, govs]) => {
-      setServices(srvs);
-      setFeaturedProducts(prods);
-      setFeaturedProjects(prjs);
-      setReviews(revs);
-      setGovernates(govs);
+      if (Array.isArray(srvs) && srvs.length > 0) setServices(srvs);
+      if (Array.isArray(prods) && prods.length > 0) setFeaturedProducts(prods);
+      if (Array.isArray(prjs) && prjs.length > 0) setFeaturedProjects(prjs);
+      if (Array.isArray(revs) && revs.length > 0) setReviews(revs);
+      if (Array.isArray(govs) && govs.length > 0) setGovernates(govs);
       setLoading(false);
     });
   }, []);
@@ -694,10 +703,13 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                 <div>
                   <div className="relative h-52 bg-slate-900 overflow-hidden">
                     <img
-                      src={project.images[0] || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop'}
+                      src={project.images[0] || '/images/projects/sanaa-cold-storage.jpg'}
                       alt={language === 'ar' ? project.titleAr : project.titleEn}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/projects/sanaa-cold-storage.jpg';
+                      }}
                     />
                     <div className="absolute top-3 start-3 px-2.5 py-1 rounded-md bg-[#0B192C]/90 text-white text-xs font-bold flex items-center gap-1.5 backdrop-blur">
                       <MapPin className="w-3.5 h-3.5 text-[#C87D55]" />

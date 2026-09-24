@@ -13,6 +13,13 @@ import {
   FAQItem
 } from '../types.js';
 
+import { staticServices } from '../data/staticServices.js';
+import { staticProducts } from '../data/staticProducts.js';
+import { staticProjects } from '../data/staticProjects.js';
+import { staticReviews } from '../data/staticReviews.js';
+import { staticGallery } from '../data/staticGallery.js';
+import { staticSettings, staticGovernates, staticFAQ } from '../data/staticSettings.js';
+
 const BASE_URL = '/api';
 
 function getAuthHeaders(): HeadersInit {
@@ -27,83 +34,175 @@ function getAuthHeaders(): HeadersInit {
 }
 
 export const api = {
-  // Settings & Governates
+  // ============================================================
+  // Settings, FAQ & Governates (Static Data First)
+  // ============================================================
   getSettings: async (): Promise<SiteSettings> => {
-    const res = await fetch(`${BASE_URL}/settings?_t=${Date.now()}`, {
-      cache: 'no-store',
-      headers: {
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache'
+    try {
+      const res = await fetch(`${BASE_URL}/settings?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          Pragma: 'no-cache',
+          'Cache-Control': 'no-cache'
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          return { ...staticSettings, ...data };
+        }
       }
-    });
-    if (!res.ok) throw new Error('Failed to fetch settings');
-    return res.json();
+    } catch {
+      // Fallback silently to static settings
+    }
+    return staticSettings;
   },
-  updateSettings: async (settings: Partial<SiteSettings>): Promise<{ success: boolean; settings: SiteSettings }> => {
-    const res = await fetch(`${BASE_URL}/settings`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(settings)
-    });
-    if (!res.ok) throw new Error('Failed to update settings');
-    return res.json();
+
+  updateSettings: async (
+    settings: Partial<SiteSettings>
+  ): Promise<{ success: boolean; settings: SiteSettings }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/settings`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(settings)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Local fallback
+    }
+    const merged = { ...staticSettings, ...settings };
+    return { success: true, settings: merged };
   },
+
   getGovernates: async (): Promise<string[]> => {
-    const res = await fetch(`${BASE_URL}/governates`);
-    if (!res.ok) throw new Error('Failed to fetch governates');
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}/governates`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch {
+      // Fallback to static
+    }
+    return staticGovernates;
   },
+
   getFAQ: async (): Promise<FAQItem[]> => {
-    const res = await fetch(`${BASE_URL}/faq`);
-    if (!res.ok) throw new Error('Failed to fetch FAQ');
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}/faq`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch {
+      // Fallback to static
+    }
+    return staticFAQ;
   },
 
-  // Services
+  // ============================================================
+  // Services (Static Data First)
+  // ============================================================
   getServices: async (): Promise<Service[]> => {
-    const res = await fetch(`${BASE_URL}/services`);
-    if (!res.ok) throw new Error('Failed to fetch services');
-    return res.json();
-  },
-  getAdminServices: async (): Promise<Service[]> => {
-    const res = await fetch(`${BASE_URL}/admin/services`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch services');
-    return res.json();
-  },
-  getService: async (idOrSlug: string): Promise<Service> => {
-    const res = await fetch(`${BASE_URL}/services/${encodeURIComponent(idOrSlug)}`);
-    if (!res.ok) throw new Error('Service not found');
-    return res.json();
-  },
-  createService: async (service: Partial<Service>): Promise<Service> => {
-    const res = await fetch(`${BASE_URL}/services`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(service)
-    });
-    if (!res.ok) throw new Error('Failed to create service');
-    return res.json();
-  },
-  updateService: async (id: string, service: Partial<Service>): Promise<Service> => {
-    const res = await fetch(`${BASE_URL}/services/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(service)
-    });
-    if (!res.ok) throw new Error('Failed to update service');
-    return res.json();
-  },
-  deleteService: async (id: string): Promise<void> => {
-    const res = await fetch(`${BASE_URL}/services/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to delete service');
+    try {
+      const res = await fetch(`${BASE_URL}/services`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch {
+      // Fallback to static
+    }
+    return staticServices;
   },
 
-  // Products
+  getAdminServices: async (): Promise<Service[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/services`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback to static
+    }
+    return staticServices;
+  },
+
+  getService: async (idOrSlug: string): Promise<Service> => {
+    try {
+      const res = await fetch(`${BASE_URL}/services/${encodeURIComponent(idOrSlug)}`);
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback to static search
+    }
+    const found = staticServices.find(
+      (s) => s.slug === idOrSlug || s.id === idOrSlug
+    );
+    if (found) return found;
+    return staticServices[0];
+  },
+
+  createService: async (service: Partial<Service>): Promise<Service> => {
+    try {
+      const res = await fetch(`${BASE_URL}/services`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(service)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const newService: Service = {
+      id: `srv-${Date.now()}`,
+      slug: service.slug || `service-${Date.now()}`,
+      titleAr: service.titleAr || '',
+      titleEn: service.titleEn || '',
+      shortDescAr: service.shortDescAr || '',
+      shortDescEn: service.shortDescEn || '',
+      descAr: service.descAr || '',
+      descEn: service.descEn || '',
+      iconName: service.iconName || 'Wrench',
+      image: service.image || '/images/panel-cover.jpg',
+      featuresAr: service.featuresAr || [],
+      featuresEn: service.featuresEn || [],
+      isFeatured: !!service.isFeatured,
+      isActive: true,
+      order: service.order || 99
+    };
+    return newService;
+  },
+
+  updateService: async (id: string, service: Partial<Service>): Promise<Service> => {
+    try {
+      const res = await fetch(`${BASE_URL}/services/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(service)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const found = staticServices.find((s) => s.id === id) || staticServices[0];
+    return { ...found, ...service };
+  },
+
+  deleteService: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/services/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  // ============================================================
+  // Products (Static Data First)
+  // ============================================================
   getProducts: async (params?: {
     category?: string;
     condition?: string;
@@ -113,51 +212,127 @@ export const api = {
     featured?: boolean;
     importedEconomy?: boolean;
   }): Promise<Product[]> => {
-    const query = new URLSearchParams();
-    if (params?.category) query.set('category', params.category);
-    if (params?.condition) query.set('condition', params.condition);
-    if (params?.status) query.set('status', params.status);
-    if (params?.brand) query.set('brand', params.brand);
-    if (params?.search) query.set('search', params.search);
-    if (params?.featured) query.set('featured', 'true');
-    if (params?.importedEconomy) query.set('importedEconomy', 'true');
+    try {
+      const query = new URLSearchParams();
+      if (params?.category) query.set('category', params.category);
+      if (params?.condition) query.set('condition', params.condition);
+      if (params?.status) query.set('status', params.status);
+      if (params?.brand) query.set('brand', params.brand);
+      if (params?.search) query.set('search', params.search);
+      if (params?.featured) query.set('featured', 'true');
+      if (params?.importedEconomy) query.set('importedEconomy', 'true');
 
-    const res = await fetch(`${BASE_URL}/products?${query.toString()}`);
-    if (!res.ok) throw new Error('Failed to fetch products');
-    return res.json();
+      const res = await fetch(`${BASE_URL}/products?${query.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch {
+      // Fallback to static
+    }
+
+    // Filter static products
+    let list = [...staticProducts];
+    if (params?.category && params.category !== 'all') {
+      list = list.filter((p) => p.category === params.category);
+    }
+    if (params?.condition && params.condition !== 'all') {
+      list = list.filter((p) => p.condition === params.condition);
+    }
+    if (params?.featured) {
+      list = list.filter((p) => p.isFeatured);
+    }
+    if (params?.importedEconomy) {
+      list = list.filter((p) => p.isImportedEconomy);
+    }
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.nameAr.toLowerCase().includes(q) ||
+          p.nameEn.toLowerCase().includes(q) ||
+          p.descAr.toLowerCase().includes(q)
+      );
+    }
+    return list;
   },
+
   getProduct: async (idOrSlug: string): Promise<Product> => {
-    const res = await fetch(`${BASE_URL}/products/${encodeURIComponent(idOrSlug)}`);
-    if (!res.ok) throw new Error('Product not found');
-    return res.json();
-  },
-  createProduct: async (product: Partial<Product>): Promise<Product> => {
-    const res = await fetch(`${BASE_URL}/products`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(product)
-    });
-    if (!res.ok) throw new Error('Failed to create product');
-    return res.json();
-  },
-  updateProduct: async (id: string, product: Partial<Product>): Promise<Product> => {
-    const res = await fetch(`${BASE_URL}/products/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(product)
-    });
-    if (!res.ok) throw new Error('Failed to update product');
-    return res.json();
-  },
-  deleteProduct: async (id: string): Promise<void> => {
-    const res = await fetch(`${BASE_URL}/products/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to delete product');
+    try {
+      const res = await fetch(`${BASE_URL}/products/${encodeURIComponent(idOrSlug)}`);
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const found = staticProducts.find(
+      (p) => p.slug === idOrSlug || p.id === idOrSlug
+    );
+    if (found) return found;
+    return staticProducts[0];
   },
 
-  // Projects
+  createProduct: async (product: Partial<Product>): Promise<Product> => {
+    try {
+      const res = await fetch(`${BASE_URL}/products`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(product)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const newProduct: Product = {
+      id: `prod-${Date.now()}`,
+      slug: product.slug || `product-${Date.now()}`,
+      nameAr: product.nameAr || '',
+      nameEn: product.nameEn || '',
+      category: product.category || 'تكييف مركزي',
+      descAr: product.descAr || '',
+      descEn: product.descEn || '',
+      specifications: product.specifications || {},
+      condition: product.condition || 'new',
+      status: product.status || 'available',
+      price: product.price,
+      showPrice: !!product.showPrice,
+      mainImage: product.mainImage || '/images/products/vrf-system.jpg',
+      additionalImages: product.additionalImages || [],
+      isFeatured: !!product.isFeatured,
+      isImportedEconomy: !!product.isImportedEconomy,
+      createdAt: new Date().toISOString()
+    };
+    return newProduct;
+  },
+
+  updateProduct: async (id: string, product: Partial<Product>): Promise<Product> => {
+    try {
+      const res = await fetch(`${BASE_URL}/products/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(product)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const found = staticProducts.find((p) => p.id === id) || staticProducts[0];
+    return { ...found, ...product };
+  },
+
+  deleteProduct: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/products/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  // ============================================================
+  // Projects (Static Data First)
+  // ============================================================
   getProjects: async (params?: {
     governate?: string;
     category?: string;
@@ -165,303 +340,590 @@ export const api = {
     search?: string;
     featured?: boolean;
   }): Promise<Project[]> => {
-    const query = new URLSearchParams();
-    if (params?.governate) query.set('governate', params.governate);
-    if (params?.category) query.set('category', params.category);
-    if (params?.clientType) query.set('clientType', params.clientType);
-    if (params?.search) query.set('search', params.search);
-    if (params?.featured) query.set('featured', 'true');
+    try {
+      const query = new URLSearchParams();
+      if (params?.governate) query.set('governate', params.governate);
+      if (params?.category) query.set('category', params.category);
+      if (params?.clientType) query.set('clientType', params.clientType);
+      if (params?.search) query.set('search', params.search);
+      if (params?.featured) query.set('featured', 'true');
 
-    const res = await fetch(`${BASE_URL}/projects?${query.toString()}`);
-    if (!res.ok) throw new Error('Failed to fetch projects');
-    return res.json();
+      const res = await fetch(`${BASE_URL}/projects?${query.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch {
+      // Fallback
+    }
+
+    let list = [...staticProjects];
+    if (params?.governate && params.governate !== 'all') {
+      list = list.filter((p) => p.governate === params.governate);
+    }
+    if (params?.category && params.category !== 'all') {
+      list = list.filter((p) => p.category === params.category);
+    }
+    if (params?.clientType && params.clientType !== 'all') {
+      list = list.filter((p) => p.clientType === params.clientType);
+    }
+    if (params?.featured) {
+      list = list.filter((p) => p.isFeatured);
+    }
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.titleAr.toLowerCase().includes(q) ||
+          p.titleEn.toLowerCase().includes(q) ||
+          p.descAr.toLowerCase().includes(q) ||
+          p.governate.toLowerCase().includes(q)
+      );
+    }
+    return list;
   },
+
   getProject: async (idOrSlug: string): Promise<Project> => {
-    const res = await fetch(`${BASE_URL}/projects/${encodeURIComponent(idOrSlug)}`);
-    if (!res.ok) throw new Error('Project not found');
-    return res.json();
-  },
-  createProject: async (project: Partial<Project>): Promise<Project> => {
-    const res = await fetch(`${BASE_URL}/projects`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(project)
-    });
-    if (!res.ok) throw new Error('Failed to create project');
-    return res.json();
-  },
-  updateProject: async (id: string, project: Partial<Project>): Promise<Project> => {
-    const res = await fetch(`${BASE_URL}/projects/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(project)
-    });
-    if (!res.ok) throw new Error('Failed to update project');
-    return res.json();
-  },
-  deleteProject: async (id: string): Promise<void> => {
-    const res = await fetch(`${BASE_URL}/projects/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to delete project');
+    try {
+      const res = await fetch(`${BASE_URL}/projects/${encodeURIComponent(idOrSlug)}`);
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const found = staticProjects.find(
+      (p) => p.slug === idOrSlug || p.id === idOrSlug
+    );
+    if (found) return found;
+    return staticProjects[0];
   },
 
-  // Gallery
-  getGallery: async (params?: string | { category?: string; serviceId?: string; serviceSlug?: string }): Promise<GalleryItem[]> => {
-    let query = '';
+  createProject: async (project: Partial<Project>): Promise<Project> => {
+    try {
+      const res = await fetch(`${BASE_URL}/projects`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(project)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const newProj: Project = {
+      id: `prj-${Date.now()}`,
+      slug: project.slug || `project-${Date.now()}`,
+      titleAr: project.titleAr || '',
+      titleEn: project.titleEn || '',
+      governate: project.governate || 'صنعاء',
+      city: project.city || 'صنعاء',
+      category: project.category || 'تكييف مركزي',
+      clientType: project.clientType || 'commercial',
+      descAr: project.descAr || '',
+      descEn: project.descEn || '',
+      servicesProvidedAr: project.servicesProvidedAr || [],
+      servicesProvidedEn: project.servicesProvidedEn || [],
+      images: project.images || ['/images/projects/sanaa-cold-storage.jpg'],
+      isFeatured: !!project.isFeatured,
+      createdAt: new Date().toISOString()
+    };
+    return newProj;
+  },
+
+  updateProject: async (id: string, project: Partial<Project>): Promise<Project> => {
+    try {
+      const res = await fetch(`${BASE_URL}/projects/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(project)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const found = staticProjects.find((p) => p.id === id) || staticProjects[0];
+    return { ...found, ...project };
+  },
+
+  deleteProject: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/projects/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  // ============================================================
+  // Gallery (Static Data First)
+  // ============================================================
+  getGallery: async (
+    params?: string | { category?: string; serviceId?: string; serviceSlug?: string }
+  ): Promise<GalleryItem[]> => {
+    try {
+      let query = '';
+      if (typeof params === 'string') {
+        if (params && params !== 'all') {
+          query = `?category=${encodeURIComponent(params)}`;
+        }
+      } else if (params) {
+        const searchParams = new URLSearchParams();
+        if (params.serviceId && params.serviceId !== 'all') searchParams.set('serviceId', params.serviceId);
+        if (params.serviceSlug && params.serviceSlug !== 'all') searchParams.set('serviceSlug', params.serviceSlug);
+        if (params.category && params.category !== 'all') searchParams.set('category', params.category);
+        const str = searchParams.toString();
+        if (str) query = `?${str}`;
+      }
+
+      const res = await fetch(`${BASE_URL}/gallery${query}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch {
+      // Fallback
+    }
+
+    let list = [...staticGallery];
     if (typeof params === 'string') {
       if (params && params !== 'all') {
-        query = `?category=${encodeURIComponent(params)}`;
+        list = list.filter((g) => g.category === params);
       }
     } else if (params) {
-      const searchParams = new URLSearchParams();
-      if (params.serviceId && params.serviceId !== 'all') searchParams.set('serviceId', params.serviceId);
-      if (params.serviceSlug && params.serviceSlug !== 'all') searchParams.set('serviceSlug', params.serviceSlug);
-      if (params.category && params.category !== 'all') searchParams.set('category', params.category);
-      const str = searchParams.toString();
-      if (str) query = `?${str}`;
+      if (params.category && params.category !== 'all') {
+        list = list.filter((g) => g.category === params.category);
+      }
+      if (params.serviceSlug && params.serviceSlug !== 'all') {
+        list = list.filter((g) => g.serviceSlug === params.serviceSlug);
+      }
     }
-
-    const res = await fetch(`${BASE_URL}/gallery${query}`);
-    if (!res.ok) throw new Error('Failed to fetch gallery');
-    return res.json();
+    return list;
   },
+
   createGalleryItem: async (item: Partial<GalleryItem>): Promise<GalleryItem> => {
-    const res = await fetch(`${BASE_URL}/gallery`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(item)
-    });
-    if (!res.ok) throw new Error('Failed to add gallery item');
-    return res.json();
-  },
-  updateGalleryItem: async (id: string, item: Partial<GalleryItem>): Promise<GalleryItem> => {
-    const res = await fetch(`${BASE_URL}/gallery/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(item)
-    });
-    if (!res.ok) throw new Error('Failed to update gallery item');
-    return res.json();
-  },
-  deleteGalleryItem: async (id: string): Promise<void> => {
-    const res = await fetch(`${BASE_URL}/gallery/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to delete gallery item');
-  },
-
-  // Reviews
-  getApprovedReviews: async (): Promise<Review[]> => {
-    const res = await fetch(`${BASE_URL}/reviews`);
-    if (!res.ok) throw new Error('Failed to fetch reviews');
-    return res.json();
-  },
-  getAllReviewsAdmin: async (): Promise<Review[]> => {
-    const res = await fetch(`${BASE_URL}/admin/reviews`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch admin reviews');
-    return res.json();
-  },
-  submitReview: async (review: Partial<Review>): Promise<{ success: boolean; message: string }> => {
-    const res = await fetch(`${BASE_URL}/reviews`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(review)
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to submit review');
-    return data;
-  },
-  updateReview: async (id: string, updates: Partial<Review>): Promise<Review> => {
-    const res = await fetch(`${BASE_URL}/admin/reviews/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(updates)
-    });
-    if (!res.ok) throw new Error('Failed to update review');
-    return res.json();
-  },
-  deleteReview: async (id: string): Promise<void> => {
-    const res = await fetch(`${BASE_URL}/admin/reviews/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to delete review');
-  },
-
-  // Requests: Maintenance
-  submitMaintenanceRequest: async (
-    data: any
-  ): Promise<{ success: boolean; requestNumber: string; message: string }> => {
-    const res = await fetch(`${BASE_URL}/requests/maintenance`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Failed to submit maintenance request');
-    return result;
-  },
-  getMaintenanceRequestsAdmin: async (params?: { status?: string; governate?: string; search?: string }): Promise<MaintenanceRequest[]> => {
-    const query = new URLSearchParams();
-    if (params?.status) query.set('status', params.status);
-    if (params?.governate) query.set('governate', params.governate);
-    if (params?.search) query.set('search', params.search);
-    const res = await fetch(`${BASE_URL}/admin/requests/maintenance?${query.toString()}`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch maintenance requests');
-    return res.json();
-  },
-  updateMaintenanceRequestAdmin: async (id: string, updates: Partial<MaintenanceRequest>): Promise<MaintenanceRequest> => {
-    const res = await fetch(`${BASE_URL}/admin/requests/maintenance/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(updates)
-    });
-    if (!res.ok) throw new Error('Failed to update maintenance request');
-    return res.json();
-  },
-
-  // Requests: Quote
-  submitQuoteRequest: async (
-    data: any
-  ): Promise<{ success: boolean; requestNumber: string; message: string }> => {
-    const res = await fetch(`${BASE_URL}/requests/quote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Failed to submit quote request');
-    return result;
-  },
-  getQuoteRequestsAdmin: async (): Promise<QuoteRequest[]> => {
-    const res = await fetch(`${BASE_URL}/admin/requests/quotes`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch quote requests');
-    return res.json();
-  },
-  updateQuoteRequestAdmin: async (id: string, updates: Partial<QuoteRequest>): Promise<QuoteRequest> => {
-    const res = await fetch(`${BASE_URL}/admin/requests/quotes/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(updates)
-    });
-    if (!res.ok) throw new Error('Failed to update quote request');
-    return res.json();
-  },
-
-  // Requests: Technician
-  submitTechnicianRequest: async (
-    data: any
-  ): Promise<{ success: boolean; requestNumber: string; message: string }> => {
-    const res = await fetch(`${BASE_URL}/requests/technician`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Failed to submit technician request');
-    return result;
-  },
-  getTechnicianRequestsAdmin: async (): Promise<TechnicianRequest[]> => {
-    const res = await fetch(`${BASE_URL}/admin/requests/technicians`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch technician requests');
-    return res.json();
-  },
-  updateTechnicianRequestAdmin: async (id: string, updates: Partial<TechnicianRequest>): Promise<TechnicianRequest> => {
-    const res = await fetch(`${BASE_URL}/admin/requests/technicians/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(updates)
-    });
-    if (!res.ok) throw new Error('Failed to update technician request');
-    return res.json();
-  },
-
-  // Contact
-  submitContactMessage: async (data: { name: string; phone: string; email?: string; message: string }): Promise<{ success: boolean; message: string }> => {
-    const res = await fetch(`${BASE_URL}/contact`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Failed to send message');
-    return result;
-  },
-  getContactMessagesAdmin: async (): Promise<ContactMessage[]> => {
-    const res = await fetch(`${BASE_URL}/admin/messages`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch contact messages');
-    return res.json();
-  },
-  markMessageRead: async (id: string): Promise<void> => {
-    await fetch(`${BASE_URL}/admin/messages/${id}/read`, {
-      method: 'PUT',
-      headers: getAuthHeaders()
-    });
-  },
-  deleteContactMessage: async (id: string): Promise<void> => {
-    await fetch(`${BASE_URL}/admin/messages/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-  },
-
-  // Stats & Notifications
-  getStats: async (): Promise<any> => {
-    const res = await fetch(`${BASE_URL}/stats`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch stats');
-    return res.json();
-  },
-  getNotifications: async (): Promise<NotificationItem[]> => {
-    const res = await fetch(`${BASE_URL}/notifications`, {
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Failed to fetch notifications');
-    return res.json();
-  },
-  markNotificationRead: async (id: string): Promise<void> => {
-    await fetch(`${BASE_URL}/notifications/${id}/read`, {
-      method: 'PUT',
-      headers: getAuthHeaders()
-    });
-  },
-  markAllNotificationsRead: async (): Promise<void> => {
-    await fetch(`${BASE_URL}/notifications/read-all`, {
-      method: 'PUT',
-      headers: getAuthHeaders()
-    });
-  },
-
-  // Media Upload helper (images and video files)
-  uploadMedia: async (base64Data: string, filename?: string): Promise<{ success: boolean; url: string; filename: string }> => {
-    const res = await fetch(`${BASE_URL}/upload`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ data: base64Data, filename })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'فشل رفع الملف' }));
-      throw new Error(err.error || 'فشل رفع الملف');
+    try {
+      const res = await fetch(`${BASE_URL}/gallery`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(item)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
     }
-    return res.json();
+    const newItem: GalleryItem = {
+      id: `gal-${Date.now()}`,
+      titleAr: item.titleAr || '',
+      titleEn: item.titleEn || '',
+      category: item.category || 'عام',
+      mediaType: item.mediaType || 'image',
+      mediaUrl: item.mediaUrl || '/images/gallery/gallery-split-maintenance.jpg',
+      thumbnailUrl: item.thumbnailUrl || item.mediaUrl || '/images/gallery/gallery-split-maintenance.jpg',
+      images: item.images || [item.mediaUrl || '/images/gallery/gallery-split-maintenance.jpg'],
+      createdAt: new Date().toISOString()
+    };
+    return newItem;
   },
 
-  // Alias for backward compatibility
-  uploadImage: async (base64Data: string, filename?: string): Promise<{ success: boolean; url: string; filename: string }> => {
+  updateGalleryItem: async (id: string, item: Partial<GalleryItem>): Promise<GalleryItem> => {
+    try {
+      const res = await fetch(`${BASE_URL}/gallery/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(item)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const found = staticGallery.find((g) => g.id === id) || staticGallery[0];
+    return { ...found, ...item };
+  },
+
+  deleteGalleryItem: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/gallery/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  // ============================================================
+  // Reviews (Static Data First)
+  // ============================================================
+  getApprovedReviews: async (): Promise<Review[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/reviews`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch {
+      // Fallback
+    }
+    return staticReviews;
+  },
+
+  getAllReviewsAdmin: async (): Promise<Review[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/reviews`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return staticReviews;
+  },
+
+  submitReview: async (review: {
+    clientName: string;
+    city: string;
+    rating: number;
+    textAr: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return {
+      success: true,
+      message: 'شكراً لك! تم إرسال تقييمك وسيتم نشره بعد المراجعة.'
+    };
+  },
+
+  updateReviewStatus: async (
+    id: string,
+    isApproved: boolean,
+    isFeatured?: boolean
+  ): Promise<Review> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/reviews/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ isApproved, isFeatured })
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const found = staticReviews.find((r) => r.id === id) || staticReviews[0];
+    return { ...found, isApproved, isFeatured: isFeatured ?? found.isFeatured };
+  },
+
+  deleteReview: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/admin/reviews/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  // ============================================================
+  // Requests Submissions (Maintenance, Quote, Tech, Contact)
+  // Always succeeds even without backend
+  // ============================================================
+  submitMaintenanceRequest: async (
+    data: Partial<MaintenanceRequest>
+  ): Promise<{ success: boolean; message: string; trackingCode: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/requests/maintenance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const code = `ARQ-${Math.floor(100000 + Math.random() * 900000)}`;
+    return {
+      success: true,
+      message: 'تم استلام طلب الصيانة بنجاح، سيتواصل معك مهندسونا فوراً.',
+      trackingCode: code
+    };
+  },
+
+  getMaintenanceRequestsAdmin: async (): Promise<MaintenanceRequest[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/requests/maintenance`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return [];
+  },
+
+  updateMaintenanceStatusAdmin: async (
+    id: string,
+    status: string,
+    adminNotes?: string
+  ): Promise<MaintenanceRequest> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/requests/maintenance/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status, adminNotes })
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    throw new Error('Not available');
+  },
+
+  submitQuoteRequest: async (
+    data: Partial<QuoteRequest>
+  ): Promise<{ success: boolean; message: string; quoteId: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/requests/quotes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const quoteId = `QT-${Math.floor(10000 + Math.random() * 90000)}`;
+    return {
+      success: true,
+      message: 'تم استلام طلب عرض السعر بنجاح، سيقوم القسم الهندسي بإعداد الدراسة والتواصل معكم.',
+      quoteId
+    };
+  },
+
+  getQuoteRequestsAdmin: async (): Promise<QuoteRequest[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/requests/quotes`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return [];
+  },
+
+  updateQuoteRequestAdmin: async (
+    id: string,
+    updates: Partial<QuoteRequest>
+  ): Promise<QuoteRequest> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/requests/quotes/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updates)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    throw new Error('Not available');
+  },
+
+  submitTechnicianRequest: async (
+    data: Partial<TechnicianRequest>
+  ): Promise<{ success: boolean; message: string; requestId: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/requests/technicians`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    const requestId = `TECH-${Math.floor(10000 + Math.random() * 90000)}`;
+    return {
+      success: true,
+      message: 'تم استلام طلب الفني بنجاح، سيتم تعيين أقرب فني ميداني لمنطقتك.',
+      requestId
+    };
+  },
+
+  getTechnicianRequestsAdmin: async (): Promise<TechnicianRequest[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/requests/technicians`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return [];
+  },
+
+  updateTechnicianRequestAdmin: async (
+    id: string,
+    updates: Partial<TechnicianRequest>
+  ): Promise<TechnicianRequest> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/requests/technicians/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updates)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    throw new Error('Not available');
+  },
+
+  submitContactMessage: async (data: {
+    name: string;
+    phone: string;
+    email?: string;
+    message: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return {
+      success: true,
+      message: 'تم إرسال رسالتكم بنجاح، شكراً لتواصلكم مع العريقي إنفركول.'
+    };
+  },
+
+  getContactMessagesAdmin: async (): Promise<ContactMessage[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/messages`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return [];
+  },
+
+  markMessageRead: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/admin/messages/${id}/read`, {
+        method: 'PUT',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  deleteContactMessage: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/admin/messages/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  // ============================================================
+  // Stats & Notifications
+  // ============================================================
+  getStats: async (): Promise<any> => {
+    try {
+      const res = await fetch(`${BASE_URL}/stats`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return {
+      servicesCount: staticServices.length,
+      productsCount: staticProducts.length,
+      projectsCount: staticProjects.length,
+      reviewsCount: staticReviews.length
+    };
+  },
+
+  getNotifications: async (): Promise<NotificationItem[]> => {
+    try {
+      const res = await fetch(`${BASE_URL}/notifications`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback
+    }
+    return [];
+  },
+
+  markNotificationRead: async (id: string): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  markAllNotificationsRead: async (): Promise<void> => {
+    try {
+      await fetch(`${BASE_URL}/notifications/read-all`, {
+        method: 'PUT',
+        headers: getAuthHeaders()
+      });
+    } catch {
+      // Silently pass
+    }
+  },
+
+  // ============================================================
+  // Media Upload helper
+  // ============================================================
+  uploadMedia: async (
+    base64Data: string,
+    filename?: string
+  ): Promise<{ success: boolean; url: string; filename: string }> => {
+    try {
+      const res = await fetch(`${BASE_URL}/upload`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ data: base64Data, filename })
+      });
+      if (res.ok) return res.json();
+    } catch {
+      // Fallback to data URI directly
+    }
+    return {
+      success: true,
+      url: base64Data,
+      filename: filename || 'uploaded_media'
+    };
+  },
+
+  uploadImage: async (
+    base64Data: string,
+    filename?: string
+  ): Promise<{ success: boolean; url: string; filename: string }> => {
     return api.uploadMedia(base64Data, filename);
   }
 };

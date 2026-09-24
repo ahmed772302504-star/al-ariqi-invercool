@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext.js';
 import { api } from '../services/api.js';
 import { Review } from '../types.js';
+import { staticReviews } from '../data/staticReviews.js';
 import { Star, MessageSquarePlus, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
 
 export const ReviewsPage: React.FC = () => {
   const { language, t } = useLanguage();
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>(staticReviews);
+  const [loading, setLoading] = useState(false);
 
   // Form state
   const [clientName, setClientName] = useState('');

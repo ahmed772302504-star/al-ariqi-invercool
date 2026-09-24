@@ -4,6 +4,8 @@ import { api } from '../services/api.js';
 import { GalleryItem, Service } from '../types.js';
 import { Lightbox } from '../components/common/Lightbox.js';
 import { VideoPlayer } from '../components/common/VideoPlayer.js';
+import { staticGallery } from '../data/staticGallery.js';
+import { staticServices } from '../data/staticServices.js';
 import {
   Image as ImageIcon,
   Building2,
@@ -16,10 +18,10 @@ import {
 
 export const GalleryPage: React.FC = () => {
   const { language, t } = useLanguage();
-  const [items, setItems] = useState<GalleryItem[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
+  const [items, setItems] = useState<GalleryItem[]>(staticGallery);
+  const [services, setServices] = useState<Service[]>(staticServices);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Upgraded Lightbox State
   const [activeItem, setActiveItem] = useState<GalleryItem | null>(null);

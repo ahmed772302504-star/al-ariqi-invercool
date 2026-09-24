@@ -126,27 +126,15 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, navigate }) => {
             {/* In-App PWA Install Button for Offline Readiness */}
             <PWAInstallButton variant="navbar" className="hidden sm:inline-flex" />
 
-            {/* Admin Dashboard shortcut */}
-            {user ? (
+            {/* Admin Dashboard shortcut - only visible to authenticated admin user */}
+            {user && (
               <button
                 onClick={() => handleNav('admin')}
                 id="header-admin-btn"
-                className="flex items-center gap-1 text-xs text-amber-300 hover:text-amber-200 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800"
+                className="flex items-center gap-1 text-xs text-amber-300 hover:text-amber-200 bg-amber-950/40 px-2.5 py-0.5 rounded border border-amber-800"
               >
                 <Lock className="w-3 h-3" />
                 <span>{t('لوحة التحكم', 'Admin')}</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => handleNav('admin-login')}
-                id="header-login-btn"
-                className={`flex items-center gap-1 text-xs transition ${
-                  isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="تسجيل دخول الإدارة"
-              >
-                <Lock className="w-3 h-3" />
-                <span>{t('دخول الإدارة', 'Login')}</span>
               </button>
             )}
           </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext.js';
 import { api } from '../services/api.js';
 import { Project } from '../types.js';
+import { staticProjects } from '../data/staticProjects.js';
 import { Lightbox } from '../components/common/Lightbox.js';
 import { VideoPlayer } from '../components/common/VideoPlayer.js';
 import {
@@ -23,16 +24,21 @@ interface ProjectDetailPageProps {
 
 export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ slug, navigate }) => {
   const { language, t } = useLanguage();
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
+  const staticFound = staticProjects.find((p) => p.slug === slug || p.id === slug) || null;
+  const [project, setProject] = useState<Project | null>(staticFound);
+  const [loading, setLoading] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     if (slug) {
       api.getProject(slug)
-        .then(setProject)
-        .catch(() => setProject(null))
+        .then((data) => {
+          if (data) setProject(data);
+        })
+        .catch(() => {
+          if (!project && staticFound) setProject(staticFound);
+        })
         .finally(() => setLoading(false));
     }
   }, [slug]);

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext.js';
 import { api } from '../services/api.js';
 import { Product } from '../types.js';
+import { staticProducts } from '../data/staticProducts.js';
 import {
   Tag,
   Search,
@@ -35,8 +36,8 @@ function normalizeSearchText(text: string): string {
 
 export const ProductsPage: React.FC<ProductsPageProps> = ({ navigate }) => {
   const { language, t } = useLanguage();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(staticProducts);
+  const [loading, setLoading] = useState(false);
 
   // Filters state
   const [searchTerm, setSearchTerm] = useState('');

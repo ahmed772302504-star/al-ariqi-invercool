@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext.js';
 import { api } from '../services/api.js';
 import { Product } from '../types.js';
+import { staticProducts } from '../data/staticProducts.js';
 import { Lightbox } from '../components/common/Lightbox.js';
 import {
   Tag,
@@ -24,9 +25,10 @@ interface ProductDetailPageProps {
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, navigate }) => {
   const { language, t } = useLanguage();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState<string>('');
+  const staticFound = staticProducts.find((p) => p.slug === slug || p.id === slug) || null;
+  const [product, setProduct] = useState<Product | null>(staticFound);
+  const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>(staticFound?.mainImage || '');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -34,10 +36,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, navi
     if (slug) {
       api.getProduct(slug)
         .then((data) => {
-          setProduct(data);
-          setSelectedImage(data.mainImage);
+          if (data) {
+            setProduct(data);
+            setSelectedImage(data.mainImage);
+          }
         })
-        .catch(() => setProduct(null))
+        .catch(() => {
+          if (!product && staticFound) {
+            setProduct(staticFound);
+            setSelectedImage(staticFound.mainImage);
+          }
+        })
         .finally(() => setLoading(false));
     }
   }, [slug]);

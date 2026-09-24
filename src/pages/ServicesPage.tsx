@@ -4,6 +4,7 @@ import { useSettings } from '../context/SettingsContext.js';
 import { api } from '../services/api.js';
 import { Service } from '../types.js';
 import { SubServicesGrid } from '../components/common/SubServicesGrid.js';
+import { staticServices } from '../data/staticServices.js';
 import {
   Wrench,
   CheckCircle2,
@@ -44,8 +45,8 @@ function normalizeSearchText(text: string): string {
 export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate }) => {
   const { language, t } = useLanguage();
   const { settings, getCacheBusted } = useSettings();
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState<Service[]>(staticServices);
+  const [loading, setLoading] = useState(false);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,9 +55,9 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate }) => {
   useEffect(() => {
     api.getServices()
       .then((srvs) => {
-        setServices(srvs);
+        if (Array.isArray(srvs) && srvs.length > 0) setServices(srvs);
       })
-      .catch(() => setServices([]))
+      .catch(() => setServices(staticServices))
       .finally(() => setLoading(false));
   }, []);
 
