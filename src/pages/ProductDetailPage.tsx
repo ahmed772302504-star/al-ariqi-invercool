@@ -97,9 +97,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, navi
               className="relative h-80 sm:h-96 rounded-2xl bg-slate-900 overflow-hidden cursor-zoom-in border border-slate-200 group"
             >
               <img
-                src={selectedImage}
+                src={selectedImage || '/images/products/vrf-system.jpg'}
                 alt={product.nameAr}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/products/vrf-system.jpg';
+                }}
               />
 
               {/* Status Badges */}

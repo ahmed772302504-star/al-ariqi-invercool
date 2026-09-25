@@ -11,7 +11,7 @@ export const staticServices: Service[] = [
     "descAr": "فريق هندسي متخصص في تشخيص وإصلاح كافة أعطال وحدات التكييف المنزلية والتجارية، مع فحص دورات الفريون، الكمبروسر، والدوائر الكهربائية بدقة متناهية.",
     "descEn": "Specialized engineering team for diagnosing and repairing all residential and commercial AC malfunctions, refrigerant cycles, compressors, and electrical circuits.",
     "iconName": "Wrench",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/gallery/gallery-split-maintenance.jpg",
     "featuresAr": [
       "فحص ضغط الغاز وتعبئة الفريون الأصلي",
       "تنظيف الفلاتر والمبخرات بتقنية الضغط العالي",
@@ -38,7 +38,7 @@ export const staticServices: Service[] = [
     "descAr": "خدمات هندسية متكاملة لصيانة دورات التبريد والمكثفات والمبخرات وضواغط التبريد لمختلف المنشآت.",
     "descEn": "Integrated engineering services for refrigeration loops, condensers, evaporators, and refrigeration compressors.",
     "iconName": "Snowflake",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/gallery/gallery-chiller-service.jpg",
     "featuresAr": [
       "تشخيص دقيق لكفاءة التبريد",
       "إصلاح تسريبات خطوط الغاز",
@@ -65,7 +65,7 @@ export const staticServices: Service[] = [
     "descAr": "تنفيذ أنظمة التكييف المركزي المتطورة للمباني الكبيرة والأبراج والمؤسسات بأعلى المعايير الهندسية مع تصميم مجاري الهواء (Ducting) وتوزيع الأحمال الحرارية بدقة.",
     "descEn": "Execution of advanced central AC systems for large buildings and corporations following highest engineering standards including duct design and heat load calculation.",
     "iconName": "Building",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/products/vrf-system.jpg",
     "featuresAr": [
       "حساب الأحمال الحرارية الهندسية (Cooling Load)",
       "تصميم وتنفيذ دكت التكييف المعزول",
@@ -134,7 +134,7 @@ export const staticServices: Service[] = [
     "descAr": "حلول تبريد مركزية للأنشطة الصناعية ومصانع الأغذية ومراكز التوزيع الكبرى مع أحدث وحدات التكثيف والمبادلات الحرارية.",
     "descEn": "Central refrigeration solutions for industrial plants, food processing facilities, and large logistics hubs.",
     "iconName": "Cpu",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/products/coldroom-condensing.jpg",
     "featuresAr": [
       "كفاءة طاقة استثنائية بنظام الإنفرتر",
       "عزل حراري هندسي عالي الكفاءة",
@@ -161,7 +161,7 @@ export const staticServices: Service[] = [
     "descAr": "تصميم وتنفيذ مستودعات وغرف التبريد والتجميد التجاري والصيدلاني والغذائي باستخدام ألواح ساندوتش بانل عازلة ومعدات تبريد مطابقة للمواصفات الدولية.",
     "descEn": "Design and construction of commercial, pharmaceutical, and food cold storage rooms using certified sandwich panels and heavy-duty refrigeration units.",
     "iconName": "Layers",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/projects/sanaa-cold-storage.jpg",
     "featuresAr": [
       "توريد وتركيب ساندوتش بانل كثافة عالية",
       "أبواب تبريد محكمة ومقاومة للهدر الحراري",
@@ -188,7 +188,7 @@ export const staticServices: Service[] = [
     "descAr": "تثبيت وتمديد خطوط النحاس، أنابيب الصرف، التوصيلات الكهربائية، واختبار التسريب وتفريغ الهواء (Vacuum) وفق المعايير المصنعية العالمية.",
     "descEn": "Copper pipe routing, drainage installation, electrical cabling, vacuuming, and factory-standard pressure testing.",
     "iconName": "CheckCircle2",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/gallery/gallery-compressor-diagnostics.jpg",
     "featuresAr": [
       "استخدام أنابيب نحاس أصلية ذات سماكة معتمدة",
       "تفريغ الهواء وسحب الرطوبة بجهاز الفاكيوم",
@@ -215,7 +215,7 @@ export const staticServices: Service[] = [
     "descAr": "فحص إلكتروني متقدم لتحديد أسباب توقف المكيفات، ارتفاع درجات الحرارة، الضوضاء، وتهريب الفريون مع توفير الحلول الفورية والآمنة.",
     "descEn": "Advanced electronic troubleshooting to diagnose compressor failure, high head pressure, strange noises, and refrigerant leaks.",
     "iconName": "Activity",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/gallery/gallery-split-maintenance.jpg",
     "featuresAr": [
       "أجهزة قياس إلكترونية وكواشف تسريب متطورة",
       "فحص استهلاك التيار الكهربائي (Ampere)",
@@ -242,7 +242,7 @@ export const staticServices: Service[] = [
     "descAr": "جداول زيارات دورية تشمل الغسيل الكيميائي، فحص الضواغط، تشحيم المحركات، وفحص العوازل لتقليل استهلاك الكهرباء ومنع الأعطال المفاجئة.",
     "descEn": "Scheduled inspection visits including chemical coil cleaning, compressor checks, motor lubrication, and insulation inspection to curb power bills and downtime.",
     "iconName": "ShieldCheck",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/gallery/gallery-chiller-service.jpg",
     "featuresAr": [
       "تقليل استهلاك الطاقة بنسبة تصل إلى 25%",
       "منع التوقف المفاجئ في أوقات الذروة",
@@ -269,7 +269,7 @@ export const staticServices: Service[] = [
     "descAr": "توفير أعلى درجات الراحة والهدوء للنزلاء مع أنظمة تكييف متغيرة التدفق وموفرة للطاقة وغرف تبريد مركزية لمطابخ الفنادق.",
     "descEn": "Ensuring whisper-quiet guest comfort with VRF solutions and robust kitchen cold storage.",
     "iconName": "Hotel",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/projects/aden-commercial-tower.jpg",
     "featuresAr": [
       "هدوء فائق ومستويات ضوضاء منخفضة (Ultra-quiet)",
       "تحكم ذكي مستقل لكل غرفة وجناح",
@@ -296,7 +296,7 @@ export const staticServices: Service[] = [
     "descAr": "تنفيذ أنظمة التهوية والتكييف الطبي مع فلاتر HEPA والتحكم الدقيق بالضغط الإيجابي والسلبي ونسب الرطوبة لحماية المرضى ومنع العدوى.",
     "descEn": "Specialized healthcare climate control with HEPA filtration, positive/negative pressure cascades, and strict humidity management.",
     "iconName": "Cross",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/projects/taiz-hospital-hvac.jpg",
     "featuresAr": [
       "فلاتر هيبا (HEPA Filters) بنقاوة هواء 99.97%",
       "التحكم بالضغط التفاضلي لغرف العزل والعمليات",
@@ -323,7 +323,7 @@ export const staticServices: Service[] = [
     "descAr": "تصميم حلول تكييف هندسية موفرة للطاقة مع توزيع متجانس للهواء وأنظمة تبريد خاصة بغرف السيرفرات ومراكز البيانات (Data Centers).",
     "descEn": "Energy-saving office HVAC with uniform air distribution and dedicated precision cooling for server rooms.",
     "iconName": "Briefcase",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/projects/aden-commercial-tower.jpg",
     "featuresAr": [
       "أنظمة تبريد دقيقة لغرف السيرفرات (Precision Cooling)",
       "تحكم مركزي ذكي بالمبنى (BMS)",
@@ -350,7 +350,7 @@ export const staticServices: Service[] = [
     "descAr": "أنظمة تشيلر وتبريد وتكييف ضخمة تلبي المتطلبات الحرارية الصعبة للمصانع والمراكز التجارية مع قدرات تحمل بيئية عالية.",
     "descEn": "Heavy-duty chillers and air handlers engineered for demanding industrial environments and shopping malls.",
     "iconName": "Factory",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/projects/hodeidah-central-cooling.jpg",
     "featuresAr": [
       "قدرات تبريد هائلة (Heavy tonnage)",
       "مقاومة الظروف البيئية القاسية والرطوبة",
@@ -377,7 +377,7 @@ export const staticServices: Service[] = [
     "descAr": "حلول تكييف أنيقة وذكية تناسب الديكور الداخلي للفلل والمنازل، مع تقنيات الإنفرتر لتوفير استهلاك الكهرباء ومنظومات تحكم عبر الهاتف.",
     "descEn": "Elegant, smart home air conditioning tailored for interior aesthetics with inverter energy savings.",
     "iconName": "Home",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/products/split-eco-inverter.jpg",
     "featuresAr": [
       "تصميم متناسق مع الديكور الهندسي الداخلي",
       "أجهزة إنفرتر موفرة للطاقة بنسبة 60%",
@@ -404,7 +404,7 @@ export const staticServices: Service[] = [
     "descAr": "نوفر أجهزة تكييف حديثة موفرة للطاقة ومناسبة للعمل على أنظمة الطاقة الشمسية ومولدات الكهرباء في اليمن مع توفير الضمان والقطع.",
     "descEn": "Modern, high-efficiency inverter air conditioners optimized for solar power and generators in Yemen with local warranty.",
     "iconName": "Zap",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/products/floor-standing-ac.jpg",
     "featuresAr": [
       "متوافقة مع أنظمة الطاقة الشمسية (Solar Ready)",
       "توفير فائق في استهلاك التيار الكهربائي",
@@ -431,7 +431,7 @@ export const staticServices: Service[] = [
     "descAr": "توفير الضواغط (Compressors)، المراوح، المكثفات، المحابس، حساسات الحرارة، والكرات الإلكترونية من مصادر موثوقة ومضمونة.",
     "descEn": "Supply of compressors, condenser fans, expansion valves, thermostats, and circuit boards from verified manufacturers.",
     "iconName": "Cog",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/products/copeland-compressor.jpg",
     "featuresAr": [
       "قطع أصلية ومطابقة لمواصفات المصنع",
       "فحص الجودة قبل التسليم للعميل",
@@ -458,7 +458,7 @@ export const staticServices: Service[] = [
     "descAr": "توريد أنابيب النحاس عالية الجودة، أسطوانات الفريون الأصلية، عوازل الأرمفلكس، مواد تثبيت الدكت، وأدوات الفنيين المتخصصة.",
     "descEn": "Wholesale and retail supply of copper coils, certified refrigerant cylinders, Armaflex insulation, and specialized HVAC tools.",
     "iconName": "Package",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/gallery/gallery-duct-installation.jpg",
     "featuresAr": [
       "أنابيب نحاس بمقاسات وسماكات مختلفة",
       "أسطوانات فريون نقية ومضمونة بدون شوائب",
@@ -485,7 +485,7 @@ export const staticServices: Service[] = [
     "descAr": "أجهزة تكييف ومعدات تبريد مستعملة خضعت لفحص فني شامل وإعادة تأهيل هندسي لضمان كفاءتها، مع بيان حالتها بشفافية تامة.",
     "descEn": "Refurbished and certified pre-owned AC and cooling equipment rigorously tested by our engineers with honest condition reporting.",
     "iconName": "RefreshCw",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/products/used-split-ac.jpg",
     "featuresAr": [
       "فحص هندسي شامل للكمبروسر والدارة الكهربائية",
       "اختبار الضغط والتبريد الفعلي تحت الحمل",
@@ -513,7 +513,7 @@ export const staticServices: Service[] = [
     "descAr": "حلول هندسية متكاملة لقطاع مصانع ومستودعات مياه الشرب ومراكز التوزيع، تشمل حساب الأحمال الحرارية، توريد وحدات التكثيف والمبخرات فائقة التحمل، وتجهيز غرف ساندوتش بانل عازلة لضمان تجميد وتبريد سريع لكراتين المياه بأقل استهلاك كهربائي بفضل تقنية الإنفرتر.",
     "descEn": "Comprehensive turnkey cooling systems for drinking water factories and distribution depots, engineered with heavy-duty condensing units and insulated panels.",
     "iconName": "Droplets",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/projects/dhamar-water-freezing.jpg",
     "featuresAr": [
       "تبريد وتجميد سريع لكراتين وقوارير الماء",
       "عوازل ساندوتش بانل بضغط وكثافة عالية",
@@ -541,7 +541,7 @@ export const staticServices: Service[] = [
     "descAr": "متخصصون في إنشاء وتشغيل ثلاجات ومسالخ ومستودعات حفظ وتجميد الدواجن واللحوم الكبرى، مع تركيب مبخرات وضواغط تبريد صناعية فائقة التحمل، ونظم إحكام حراري تمنع البكتيريا وتطابق أعلى المعايير الصحية العالمية لسلامة الغذاء.",
     "descEn": "Specialized construction of deep blast freezers and storage hubs for poultry and meat industries meeting strict international food safety standards.",
     "iconName": "Utensils",
-    "image": "/images/panel-cover.jpg",
+    "image": "/images/projects/ibb-poultry-freezer.jpg",
     "featuresAr": [
       "تجميد عميق فائق السرعة حتى -25 مئوية",
       "ضواغط ومبخرات صناعية للخدمة الشاقة",

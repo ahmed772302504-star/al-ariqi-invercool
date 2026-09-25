@@ -29,6 +29,10 @@ async function startServer() {
     next();
   });
 
+  // Serve uploaded images and media statically
+  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+  app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
+
   // Mount API Router
   app.use('/api', apiRouter);
 

@@ -1148,7 +1148,7 @@ apiRouter.delete('/faq/:id', requireAdmin, (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
-// Media Upload Endpoint (handles images and direct video files cleanly)
+// Media Upload Endpoint (handles images and direct video files cleanly and persists them to disk)
 apiRouter.post('/upload', (req: Request, res: Response) => {
   const { data, filename } = req.body;
   if (!data) {
@@ -1156,34 +1156,82 @@ apiRouter.post('/upload', (req: Request, res: Response) => {
     return;
   }
 
-  // Base64 validation, data URI and URL support for images & videos
+  // 1. If it's already an external URL or static path
   if (
     typeof data === 'string' &&
-    (data.startsWith('data:image/') ||
-      data.startsWith('data:video/') ||
-      data.startsWith('data:application/octet-stream') ||
-      data.startsWith('http://') ||
+    (data.startsWith('http://') ||
       data.startsWith('https://') ||
-      data.startsWith('/'))
+      data.startsWith('/uploads/') ||
+      data.startsWith('/images/'))
   ) {
-    const isVideo = data.startsWith('data:video/');
     res.json({
       success: true,
       url: data,
-      filename: filename || (isVideo ? 'uploaded_video.mp4' : 'uploaded_image.webp')
+      filename: filename || 'media_asset'
     });
     return;
   }
 
-  // If raw base64 string without data prefix
-  if (typeof data === 'string' && data.length > 50) {
-    const prefixed = `data:image/webp;base64,${data}`;
-    res.json({
-      success: true,
-      url: prefixed,
-      filename: filename || 'uploaded_image.webp'
-    });
-    return;
+  // 2. Base64 data URI handling -> write permanently to /public/uploads/
+  if (typeof data === 'string' && (data.startsWith('data:') || data.length > 50)) {
+    try {
+      let mimeType = 'image/webp';
+      let base64Content = data;
+
+      if (data.startsWith('data:')) {
+        const matches = data.match(/^data:([A-Za-z-+\/0-9]+);base64,(.+)$/s);
+        if (matches && matches.length === 3) {
+          mimeType = matches[1];
+          base64Content = matches[2];
+        } else {
+          const commaIdx = data.indexOf(',');
+          if (commaIdx !== -1) {
+            base64Content = data.substring(commaIdx + 1);
+          }
+        }
+      }
+
+      const buffer = Buffer.from(base64Content, 'base64');
+
+      let ext = '.webp';
+      if (mimeType.includes('png')) ext = '.png';
+      else if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = '.jpg';
+      else if (mimeType.includes('svg')) ext = '.svg';
+      else if (mimeType.includes('gif')) ext = '.gif';
+      else if (mimeType.includes('mp4')) ext = '.mp4';
+      else if (mimeType.includes('webm')) ext = '.webm';
+      else if (filename && path.extname(filename)) ext = path.extname(filename);
+
+      const safeBase = filename
+        ? path.parse(filename).name.replace(/[^a-zA-Z0-9_\u0600-\u06FF-]/g, '_').substring(0, 35)
+        : 'asset';
+      const uniqueFilename = `${safeBase}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}${ext}`;
+
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const filePath = path.join(uploadsDir, uniqueFilename);
+      fs.writeFileSync(filePath, buffer);
+
+      const permanentUrl = `/uploads/${uniqueFilename}`;
+      res.json({
+        success: true,
+        url: permanentUrl,
+        filename: uniqueFilename
+      });
+      return;
+    } catch (err: any) {
+      console.error('Failed to write uploaded media file to disk:', err);
+      // Fallback gracefully to data url if disk write failed
+      res.json({
+        success: true,
+        url: data,
+        filename: filename || 'uploaded_image.webp'
+      });
+      return;
+    }
   }
 
   res.status(400).json({ error: 'صيغة الملف غير مدعومة. الصيغ المسموحة: JPG, PNG, WEBP, SVG, MP4, WebM, MOV' });

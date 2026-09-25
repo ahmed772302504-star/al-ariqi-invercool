@@ -118,24 +118,28 @@ export const staticSettings: SiteSettings = {
     'AL-ARRIQI INVERCOOL is Yemen leading engineering firm in integrated HVAC, commercial refrigeration, and smart electrical control panel assembly.',
   whyUs: [
     {
+      icon: 'ShieldCheck',
       titleAr: 'دقة هندسية وتشخيص علمي للأعطال',
       titleEn: 'Engineering Precision & Scientific Diagnostics',
       descAr: 'استخدام أجهزة قياس الضغط الرقمية وكواشف التسريب الحديثة لضمان دقة الإصلاح.',
       descEn: 'Using digital manifolds and advanced leak detectors for pinpoint repair.'
     },
     {
+      icon: 'Zap',
       titleAr: 'حلول موفرة للطاقة متوافقة مع الطاقة الشمسية',
       titleEn: 'Solar-Ready Energy Saving Systems',
       descAr: 'تكنولوجيا إنفرتر متطورة تقلل استهلاك الطاقة وتناسب تشغيل المولدات والطاقة البديلة.',
       descEn: 'Inverter technology tailored for solar setups and generator stability in Yemen.'
     },
     {
+      icon: 'Clock',
       titleAr: 'سرعة الاستجابة والجاهزية للطوارئ 24/7',
       titleEn: '24/7 Rapid Emergency Response',
       descAr: 'فرق ميدانية جاهزة لإنقاذ مخزون غرف التبريد والمستشفيات في أسرع وقت.',
       descEn: 'Dedicated field crews ready to service critical cold rooms and facilities.'
     },
     {
+      icon: 'Wrench',
       titleAr: 'قطع غيار أصلية وضمان معتمد',
       titleEn: 'Genuine OEM Parts & Certified Warranty',
       descAr: 'ضواغط ومكونات أصلية من كبرى الشركات العالمية مع ضمان رسمي على القطع والتركيب.',

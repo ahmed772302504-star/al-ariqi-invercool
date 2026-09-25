@@ -192,7 +192,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         <div className="flex flex-col sm:flex-row items-center gap-4">
           {/* Current Preview or Icon */}
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-inner relative group">
-            {value ? (
+            {uploading ? (
+              <div className="absolute inset-0 bg-[#0B192C]/85 backdrop-blur-xs flex flex-col items-center justify-center text-white z-10 p-2 text-center">
+                <Loader2 className="w-7 h-7 animate-spin text-[#C87D55] mb-1.5" />
+                <span className="text-[10px] font-bold text-amber-300 leading-tight">جاري الرفع...</span>
+                <span className="text-[8px] text-slate-300 mt-0.5">يرجى الانتظار</span>
+              </div>
+            ) : value ? (
               <>
                 <img
                   src={value}

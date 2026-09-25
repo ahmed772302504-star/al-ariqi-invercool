@@ -159,6 +159,7 @@ export interface MaintenanceRequest {
   videoUrl?: string;
   status: MaintenanceStatus;
   notes?: string;
+  adminNotes?: string;
   technicianName?: string;
   appointmentDate?: string;
   cost?: number;

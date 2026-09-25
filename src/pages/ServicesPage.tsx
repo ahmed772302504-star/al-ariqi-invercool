@@ -416,10 +416,13 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate }) => {
               <div>
                 <div className="relative h-48 bg-slate-900 overflow-hidden">
                   <img
-                    src={service.image || 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop'}
+                    src={service.image || '/images/gallery/gallery-chiller-service.jpg'}
                     alt={language === 'ar' ? service.titleAr : service.titleEn}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/gallery/gallery-chiller-service.jpg';
+                    }}
                   />
                   <div className="absolute top-3 start-3 px-3 py-1 rounded-md bg-[#0B192C]/90 text-[#C87D55] text-xs font-bold border border-slate-700 backdrop-blur-xs">
                     #{index + 1}

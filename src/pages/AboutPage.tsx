@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext.js';
 import { useSettings } from '../context/SettingsContext.js';
 import {
@@ -12,7 +12,10 @@ import {
   Phone,
   MessageCircle,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  ChevronDown,
+  HelpCircle,
+  FileText
 } from 'lucide-react';
 
 interface AboutPageProps {
@@ -22,6 +25,41 @@ interface AboutPageProps {
 export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
   const { language, t } = useLanguage();
   const { settings, logoIconUrl, getCacheBusted } = useSettings();
+
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const faqs = [
+    {
+      qAr: 'ما هي مميزات عقود الصيانة الدورية والسنوية لدى العريقي إنفركول؟',
+      qEn: 'What are the benefits of annual maintenance contracts with AL-ARRIQI INVERCOOL?',
+      aAr: 'تشمل عقود الصيانة لدينا زيارات دورية مجدولة لفحص دورات الفريون، تنظيف المبخرات والمكثفات، قياس ضغوط وسحب التيار الكهربائي للضواغط، وتغيير الفلاتر، مع إعطاء الأولوية القصوى لحالات الطوارئ على مدار 24 ساعة، وتوفير قطع الغيار بأسعار مخفضة وضمان معتمد.',
+      aEn: 'Our maintenance contracts include scheduled periodic visits to inspect refrigerant circuits, clean coils and condensers, measure compressor amperage and pressure, and replace filters. Contract clients enjoy 24/7 priority emergency response and discounted genuine spare parts.'
+    },
+    {
+      qAr: 'كيف تضمنون جودة وتبريد غرف ومستودعات التبريد والتجميد الكبيرة؟',
+      qEn: 'How do you guarantee performance in large cold storage and blast freezers?',
+      aAr: 'نقوم بحساب الأحمال الحرارية بدقة هندسية وفق طبيعة المنتجات المخزنة (لحوم، دواجن، أدوية، خضار وفواكه)، ونستخدم ألواح ساندوتش بانل معزولة بكثافة 40-42 كجم/م³ ومزودة بوحدات تكثيف أصلية (Bitzer / Copeland / BOCK)، مع لوحات طبالين تحكم ذكية مزودة بأنظمة إنذار مبكر وحماية ضد تذبذب الكهرباء.',
+      aEn: 'We calculate precise heat loads tailored to your stored goods (meat, poultry, pharma, fresh produce). We install high-density 40-42 kg/m³ PIR sandwich panels with genuine condensing units (Bitzer / Copeland / BOCK) and smart control panels with early warning alarms and phase protection.'
+    },
+    {
+      qAr: 'هل تغطي خدمات الصيانة والتركيب كافة محافظات الجمهورية اليمنية؟',
+      qEn: 'Do your installation and maintenance services cover all governorates across Yemen?',
+      aAr: 'نعم، فرقنا الهندسية المتخصصة مجهزة للانتقال وتقديم خدمات التركيب والتشغيل والصيانة الطارئة في صنعاء، عدن، تعز، الحديدة، إب، حضرموت، مأرب، ذمار وكافة المناطق مع تأمين الدعم الفني المستمر.',
+      aEn: 'Yes, our mobile engineering crews are fully equipped to deploy for installation, commissioning, and emergency maintenance across Sanaa, Aden, Taiz, Hodeidah, Ibb, Hadramout, Marib, Dhamar, and all regions.'
+    },
+    {
+      qAr: 'هل تدعم أنظمة التكييف والتبريد المركزية لديكم العمل على الطاقة الشمسية؟',
+      qEn: 'Are your central HVAC and cooling systems compatible with solar energy in Yemen?',
+      aAr: 'نعم، نركز على تكنولوجيا الإنفرتر (Inverter) ذات الإقلاع السلس (Soft Starter) التي تمنع سحب تيار بدء التشغيل العالي، مما يقلل استهلاك الكهرباء بنسبة تصل إلى 50% ويجعلها متوافقة ومثالية للعمل مع منظومات الطاقة الشمسية والمولدات في اليمن.',
+      aEn: 'Yes, we prioritize Inverter and soft-starter systems that eliminate high startup currents. This reduces electricity usage by up to 50% and makes them optimal for solar battery systems and commercial generators in Yemen.'
+    },
+    {
+      qAr: 'كيف يمكن طلب معاينة ميدانية أو طلب عرض سعر رسمي لمشروعنا؟',
+      qEn: 'How can we request a site inspection or formal quotation for our project?',
+      aAr: 'يمكنكم إرسال طلب مباشرة عبر نموذج «طلب عرض سعر» في الموقع، أو الاتصال المباشر بالمهندس على الرقم 770931413، أو مراسلتنا عبر الواتساب لتحديد موعد الزيارة الهندسية والمعاينة الفنية.',
+      aEn: 'You can submit a request via our "Request Quote" page, call our chief engineer directly at 770931413, or message us on WhatsApp to schedule an on-site technical inspection.'
+    }
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
@@ -131,6 +169,64 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
               {t('عقود صيانة دورية سنوية وخدمات ما بعد البيع لضمان أداء يدوم لسنوات طويلة.', 'Preventive annual maintenance contracts and dedicated after-sales support ensuring maximum system lifespan.')}
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Frequently Asked Questions (FAQ) Section - عقود الصيانة وتركيب التبريد */}
+      <div className="space-y-6 bg-slate-50/80 rounded-3xl p-6 sm:p-10 border border-slate-200">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-[#C87D55] text-xs font-bold border border-[#C87D55]/20">
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>{t('الأسئلة الشائعة والاستفسارات', 'Frequently Asked Questions')}</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+            {t('عقود الصيانة وخدمات تركيب غرف التبريد', 'Maintenance Contracts & Cold Storage Installation')}
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500">
+            {t(
+              'إجابات شاملة لأكثر الأسئلة تكراراً حول عقود الصيانة السنوية وضمانات تركيب أنظمة التبريد والتكييف في اليمن',
+              'Clear answers to common questions regarding our annual maintenance contracts, warranties, and cold room setups in Yemen'
+            )}
+          </p>
+        </div>
+
+        <div className="max-w-4xl mx-auto space-y-3 pt-4">
+          {faqs.map((faq, index) => {
+            const isOpen = openFaq === index;
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs transition-all duration-200"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : index)}
+                  className="w-full p-4 sm:p-5 text-start flex items-center justify-between gap-4 font-bold text-slate-900 hover:text-[#C87D55] transition"
+                >
+                  <span className="text-sm sm:text-base leading-snug">
+                    {language === 'ar' ? faq.qAr : faq.qEn}
+                  </span>
+                  <div
+                    className={`w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 transition-transform duration-300 ${
+                      isOpen ? 'rotate-180 bg-[#C87D55] text-white' : 'text-slate-500'
+                    }`}
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div className="px-4 pb-5 sm:px-5 sm:pb-5 pt-1 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100 bg-slate-50/50">
+                    <p>{language === 'ar' ? faq.aAr : faq.aEn}</p>
+                    <div className="mt-3 pt-3 border-t border-slate-200/60 flex items-center gap-2 text-xs font-semibold text-[#C87D55]">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{t('معتمد وموثق لدى العريقي إنفركول', 'Certified standard by AL-ARRIQI INVERCOOL')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

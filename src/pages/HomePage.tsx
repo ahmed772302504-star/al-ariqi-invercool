@@ -405,7 +405,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
               <div
                 key={service.id}
                 onClick={() => navigate('service-detail', service.slug)}
-                className={`group rounded-2xl border p-6 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                className={`group rounded-2xl border overflow-hidden p-6 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between ${
                   hasSubServices ? 'col-span-1 md:col-span-2 lg:col-span-2' : 'col-span-1'
                 } ${
                   isLight
@@ -414,12 +414,25 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                 }`}
               >
                 <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-[#0B192C] text-[#C87D55] flex items-center justify-center group-hover:scale-110 group-hover:bg-[#C87D55] group-hover:text-white transition-all duration-300 shadow-inner">
-                      <ServiceIcon name={service.iconName} className="w-7 h-7" defaultIcon={<Wind className="w-7 h-7" />} />
+                  {/* Distinctive Service Image Header */}
+                  <div className="relative h-40 sm:h-44 -mx-6 -mt-6 mb-4 bg-slate-900 overflow-hidden">
+                    <img
+                      src={service.image || '/images/gallery/gallery-chiller-service.jpg'}
+                      alt={language === 'ar' ? service.titleAr : service.titleEn}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/gallery/gallery-chiller-service.jpg';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B192C]/90 via-[#0B192C]/30 to-transparent"></div>
+                    <div className="absolute bottom-3 start-4 flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-xl bg-[#0B192C]/90 text-[#C87D55] flex items-center justify-center border border-slate-700 shadow-md group-hover:bg-[#C87D55] group-hover:text-white transition-colors duration-300">
+                        <ServiceIcon name={service.iconName} className="w-6 h-6" defaultIcon={<Wind className="w-6 h-6" />} />
+                      </div>
                     </div>
                     {hasSubServices && (
-                      <span className="px-3 py-1 rounded-full bg-[#C87D55]/15 text-[#C87D55] text-xs font-black border border-[#C87D55]/30">
+                      <span className="absolute top-3 end-3 px-3 py-1 rounded-full bg-[#0B192C]/80 text-[#C87D55] text-xs font-black border border-[#C87D55]/50 backdrop-blur-xs">
                         {t('حلول تجميد وتبريد متعددة ❄️', 'Integrated Systems ❄️')}
                       </span>
                     )}
@@ -584,10 +597,13 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                 {/* Product Image & Status Badges */}
                 <div className="relative h-48 bg-slate-100 overflow-hidden">
                   <img
-                    src={product.mainImage}
+                    src={product.mainImage || '/images/products/vrf-system.jpg'}
                     alt={language === 'ar' ? product.nameAr : product.nameEn}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/products/vrf-system.jpg';
+                    }}
                   />
                   {/* Status & Condition Badges */}
                   <div className="absolute top-2 start-2 flex flex-col gap-1">

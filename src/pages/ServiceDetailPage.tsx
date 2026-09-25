@@ -74,9 +74,12 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, navi
       <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl">
         <div className="relative h-72 sm:h-96 bg-slate-900">
           <img
-            src={service.image}
+            src={service.image || '/images/gallery/gallery-chiller-service.jpg'}
             alt={language === 'ar' ? service.titleAr : service.titleEn}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/images/gallery/gallery-chiller-service.jpg';
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B192C] via-transparent to-transparent"></div>
           <div className="absolute bottom-6 start-6 end-6 text-white space-y-2">

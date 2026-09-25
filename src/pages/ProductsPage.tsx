@@ -401,10 +401,13 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ navigate }) => {
                 {/* Image & Badges */}
                 <div className="relative h-52 bg-slate-100 overflow-hidden">
                   <img
-                    src={product.mainImage}
+                    src={product.mainImage || '/images/products/vrf-system.jpg'}
                     alt={language === 'ar' ? product.nameAr : product.nameEn}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/products/vrf-system.jpg';
+                    }}
                   />
 
                   {/* Badges */}

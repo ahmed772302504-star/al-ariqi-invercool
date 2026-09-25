@@ -620,6 +620,17 @@ export const api = {
     return { ...found, isApproved, isFeatured: isFeatured ?? found.isFeatured };
   },
 
+  updateReview: async (
+    id: string,
+    updates: { isApproved?: boolean; isFeatured?: boolean } | boolean,
+    isFeatured?: boolean
+  ): Promise<Review> => {
+    if (typeof updates === 'boolean') {
+      return api.updateReviewStatus(id, updates, isFeatured);
+    }
+    return api.updateReviewStatus(id, updates.isApproved ?? true, updates.isFeatured);
+  },
+
   deleteReview: async (id: string): Promise<void> => {
     try {
       await fetch(`${BASE_URL}/admin/reviews/${id}`, {
@@ -637,22 +648,31 @@ export const api = {
   // ============================================================
   submitMaintenanceRequest: async (
     data: Partial<MaintenanceRequest>
-  ): Promise<{ success: boolean; message: string; trackingCode: string }> => {
+  ): Promise<{ success: boolean; message: string; trackingCode: string; requestNumber: string }> => {
+    const code = `ARQ-${Math.floor(100000 + Math.random() * 900000)}`;
     try {
       const res = await fetch(`${BASE_URL}/requests/maintenance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (res.ok) return res.json();
+      if (res.ok) {
+        const json = await res.json();
+        return {
+          success: true,
+          message: json.message || 'تم استلام طلب الصيانة بنجاح، سيتواصل معك مهندسونا فوراً.',
+          trackingCode: json.trackingCode || code,
+          requestNumber: json.requestNumber || json.trackingCode || code
+        };
+      }
     } catch {
       // Fallback
     }
-    const code = `ARQ-${Math.floor(100000 + Math.random() * 900000)}`;
     return {
       success: true,
       message: 'تم استلام طلب الصيانة بنجاح، سيتواصل معك مهندسونا فوراً.',
-      trackingCode: code
+      trackingCode: code,
+      requestNumber: code
     };
   },
 
@@ -668,16 +688,15 @@ export const api = {
     return [];
   },
 
-  updateMaintenanceStatusAdmin: async (
+  updateMaintenanceRequestAdmin: async (
     id: string,
-    status: string,
-    adminNotes?: string
+    updates: Partial<MaintenanceRequest>
   ): Promise<MaintenanceRequest> => {
     try {
       const res = await fetch(`${BASE_URL}/admin/requests/maintenance/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ status, adminNotes })
+        body: JSON.stringify(updates)
       });
       if (res.ok) return res.json();
     } catch {
@@ -686,24 +705,41 @@ export const api = {
     throw new Error('Not available');
   },
 
+  updateMaintenanceStatusAdmin: async (
+    id: string,
+    status: string,
+    adminNotes?: string
+  ): Promise<MaintenanceRequest> => {
+    return api.updateMaintenanceRequestAdmin(id, { status: status as any, adminNotes });
+  },
+
   submitQuoteRequest: async (
     data: Partial<QuoteRequest>
-  ): Promise<{ success: boolean; message: string; quoteId: string }> => {
+  ): Promise<{ success: boolean; message: string; quoteId: string; requestNumber: string }> => {
+    const quoteId = `QT-${Math.floor(10000 + Math.random() * 90000)}`;
     try {
       const res = await fetch(`${BASE_URL}/requests/quotes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (res.ok) return res.json();
+      if (res.ok) {
+        const json = await res.json();
+        return {
+          success: true,
+          message: json.message || 'تم استلام طلب عرض السعر بنجاح، سيقوم القسم الهندسي بإعداد الدراسة والتواصل معكم.',
+          quoteId: json.quoteId || quoteId,
+          requestNumber: json.requestNumber || json.quoteId || quoteId
+        };
+      }
     } catch {
       // Fallback
     }
-    const quoteId = `QT-${Math.floor(10000 + Math.random() * 90000)}`;
     return {
       success: true,
       message: 'تم استلام طلب عرض السعر بنجاح، سيقوم القسم الهندسي بإعداد الدراسة والتواصل معكم.',
-      quoteId
+      quoteId,
+      requestNumber: quoteId
     };
   },
 
@@ -738,22 +774,31 @@ export const api = {
 
   submitTechnicianRequest: async (
     data: Partial<TechnicianRequest>
-  ): Promise<{ success: boolean; message: string; requestId: string }> => {
+  ): Promise<{ success: boolean; message: string; requestId: string; requestNumber: string }> => {
+    const requestId = `TECH-${Math.floor(10000 + Math.random() * 90000)}`;
     try {
       const res = await fetch(`${BASE_URL}/requests/technicians`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (res.ok) return res.json();
+      if (res.ok) {
+        const json = await res.json();
+        return {
+          success: true,
+          message: json.message || 'تم استلام طلب الفني بنجاح، سيتم تعيين أقرب فني ميداني لمنطقتك.',
+          requestId: json.requestId || requestId,
+          requestNumber: json.requestNumber || json.requestId || requestId
+        };
+      }
     } catch {
       // Fallback
     }
-    const requestId = `TECH-${Math.floor(10000 + Math.random() * 90000)}`;
     return {
       success: true,
       message: 'تم استلام طلب الفني بنجاح، سيتم تعيين أقرب فني ميداني لمنطقتك.',
-      requestId
+      requestId,
+      requestNumber: requestId
     };
   },
 
