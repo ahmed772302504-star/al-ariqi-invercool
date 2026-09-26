@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { SiteSettings } from '../types.js';
 import { api } from '../services/api.js';
 import { getCacheBustedUrl } from '../utils/cacheBuster.js';
+import { staticSettings } from '../data/staticSettings.js';
 
 interface SettingsContextType {
   settings: SiteSettings | null;
@@ -17,44 +18,11 @@ interface SettingsContextType {
 const SETTINGS_STORAGE_KEY = 'invercool_site_settings';
 const SETTINGS_CHANGE_EVENT = 'invercool_settings_updated';
 
-// Fallback initial default settings
+// Fallback initial default settings from static data
 const DEFAULT_SETTINGS: SiteSettings = {
-  companyNameAr: 'العريقي إنفركول للتكييف والتبريد',
-  companyNameEn: 'AL-ARRIQI INVERCOOL HVAC & REFRIGERATION',
-  brandNameAr: 'العريقي إنفركول',
-  brandNameEn: 'AL-ARRIQI INVERCOOL',
-  taglineAr: 'حلول متكاملة للتكييف والتبريد',
-  taglineEn: 'Integrated Air Conditioning & Refrigeration Solutions',
-  phone: '770931413',
-  companyPhone: '770931413',
-  phonePrimary: '770931413',
-  phoneSecondary: '772302504',
-  whatsapp: '770931413',
-  whatsappPrimary: '770931413',
-  facebookUrl: 'https://facebook.com',
-  email: 'info@invercool-ye.com',
-  addressAr: 'الجمهورية اليمنية - صنعاء - شارع الستين',
-  addressEn: 'Sanaa, Yemen - Sixtieth St.',
-  workHoursAr: 'السبت - الخميس: 8:00 صباحاً - 9:00 مساءً | طوارئ الصيانة: 24 ساعة',
-  workHoursEn: 'Sat - Thu: 8:00 AM - 9:00 PM | Emergency HVAC: 24/7',
-  developerName: 'م/ أحمد وليد العريقي',
-  developerPhone1: '772302504',
-  developerPhone2: '738603124',
-  heroTitleAr: 'حلول التكييف والتبريد الذكية والموفرة للطاقة باليمن',
-  heroTitleEn: 'Smart, Energy-Efficient HVAC & Cooling Solutions in Yemen',
-  heroSubtitleAr: 'ريادة هندسية في أنظمة التكييف المركزي، غرف التبريد، والأنظمة الاقتصادية',
-  heroSubtitleEn: 'Engineering Leadership in Central Air Conditioning & Cold Storage',
-  heroDescAr: 'نقدم أحدث حلول التبريد والتكييف المبتكرة للقطاعات التجارية، الصناعية، والطبية والسكنية، بأعلى معايير الكفاءة وضمان معتمد.',
-  heroDescEn: 'Delivering cutting-edge cooling and HVAC solutions for commercial, industrial, medical, and residential sectors with proven reliability.',
-  aboutDescAr: 'العريقي إنفركول هي الشركة اليمنية الرائدة في تقديم الحلول الهندسية المتكاملة في أنظمة التكييف والتبريد.',
-  aboutDescEn: 'AL-ARRIQI INVERCOOL is Yemen leading engineering firm in integrated HVAC and commercial refrigeration.',
-  whyUs: [],
-  governatesCovered: ['صنعاء', 'عدن', 'تعز', 'حضرموت', 'الحديدة', 'إب', 'مأرب', 'ذمار'],
-  logoUrl: '/logo.png',
-  logoIconUrl: '/logo-icon.png',
-  watermarkUrl: '/logo.png',
-  updatedAt: Date.now(),
-  logoUpdatedAt: Date.now()
+  ...staticSettings,
+  updatedAt: staticSettings.updatedAt || Date.now(),
+  logoUpdatedAt: staticSettings.logoUpdatedAt || Date.now()
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);

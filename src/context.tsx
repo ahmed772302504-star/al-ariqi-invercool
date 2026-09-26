@@ -14,6 +14,13 @@ import {
   FAQItem,
   NotificationItem
 } from './types';
+import { safeFetchJson } from './utils/safeFetch.js';
+import { staticServices } from './data/staticServices.js';
+import { staticProducts } from './data/staticProducts.js';
+import { staticProjects } from './data/staticProjects.js';
+import { staticGallery } from './data/staticGallery.js';
+import { staticReviews } from './data/staticReviews.js';
+import { staticSettings, staticFAQ, staticGovernates } from './data/staticSettings.js';
 
 interface AppContextType {
   lang: Language;
@@ -97,26 +104,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         faqRes,
         govRes
       ] = await Promise.all([
-        fetch('/api/settings').then((r) => r.json()).catch(() => null),
-        fetch('/api/services').then((r) => r.json()).catch(() => []),
-        fetch('/api/products').then((r) => r.json()).catch(() => []),
-        fetch('/api/projects').then((r) => r.json()).catch(() => []),
-        fetch('/api/gallery').then((r) => r.json()).catch(() => []),
-        fetch('/api/reviews').then((r) => r.json()).catch(() => []),
-        fetch('/api/faq').then((r) => r.json()).catch(() => []),
-        fetch('/api/governates').then((r) => r.json()).catch(() => [])
+        safeFetchJson('/api/settings', {}, staticSettings),
+        safeFetchJson('/api/services', {}, staticServices),
+        safeFetchJson('/api/products', {}, staticProducts),
+        safeFetchJson('/api/projects', {}, staticProjects),
+        safeFetchJson('/api/gallery', {}, staticGallery),
+        safeFetchJson('/api/reviews', {}, staticReviews),
+        safeFetchJson('/api/faq', {}, staticFAQ),
+        safeFetchJson('/api/governates', {}, staticGovernates)
       ]);
 
-      if (settingsRes) setSettings(settingsRes);
-      if (Array.isArray(servicesRes)) setServices(servicesRes);
-      if (Array.isArray(productsRes)) setProducts(productsRes);
-      if (Array.isArray(projectsRes)) setProjects(projectsRes);
-      if (Array.isArray(galleryRes)) setGallery(galleryRes);
-      if (Array.isArray(reviewsRes)) setReviews(reviewsRes);
-      if (Array.isArray(faqRes)) setFaq(faqRes);
-      if (Array.isArray(govRes)) setGovernates(govRes);
+      setSettings(settingsRes && typeof settingsRes === 'object' ? settingsRes : staticSettings);
+      setServices(Array.isArray(servicesRes) && servicesRes.length > 0 ? servicesRes : staticServices);
+      setProducts(Array.isArray(productsRes) && productsRes.length > 0 ? productsRes : staticProducts);
+      setProjects(Array.isArray(projectsRes) && projectsRes.length > 0 ? projectsRes : staticProjects);
+      setGallery(Array.isArray(galleryRes) && galleryRes.length > 0 ? galleryRes : staticGallery);
+      setReviews(Array.isArray(reviewsRes) && reviewsRes.length > 0 ? reviewsRes : staticReviews);
+      setFaq(Array.isArray(faqRes) && faqRes.length > 0 ? faqRes : staticFAQ);
+      setGovernates(Array.isArray(govRes) && govRes.length > 0 ? govRes : staticGovernates);
     } catch (err) {
-      console.error('Failed to load initial data:', err);
+      console.warn('Failed to load remote data, falling back to static data:', err);
+      setSettings(staticSettings);
+      setServices(staticServices);
+      setProducts(staticProducts);
+      setProjects(staticProjects);
+      setGallery(staticGallery);
+      setReviews(staticReviews);
+      setFaq(staticFAQ);
+      setGovernates(staticGovernates);
     }
   };
 

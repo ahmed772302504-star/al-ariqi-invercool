@@ -19,6 +19,7 @@ import { staticProjects } from '../data/staticProjects.js';
 import { staticReviews } from '../data/staticReviews.js';
 import { staticGallery } from '../data/staticGallery.js';
 import { staticSettings, staticGovernates, staticFAQ } from '../data/staticSettings.js';
+import { safeFetchJson } from '../utils/safeFetch.js';
 
 const BASE_URL = '/api';
 
@@ -57,20 +58,17 @@ export const api = {
   // ============================================================
   getSettings: async (): Promise<SiteSettings> => {
     try {
-      const res = await fetch(`${BASE_URL}/settings?_t=${Date.now()}`, {
+      const data = await safeFetchJson<SiteSettings>(`${BASE_URL}/settings?_t=${Date.now()}`, {
         cache: 'no-store',
         headers: {
           Pragma: 'no-cache',
           'Cache-Control': 'no-cache'
         }
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && typeof data === 'object') {
-          const merged = { ...staticSettings, ...data };
-          setLocalData('invercool_settings', merged);
-          return merged;
-        }
+      if (data && typeof data === 'object') {
+        const merged = { ...staticSettings, ...data };
+        setLocalData('invercool_settings', merged);
+        return merged;
       }
     } catch {
       // Fallback silently to static settings
@@ -85,15 +83,12 @@ export const api = {
   ): Promise<{ success: boolean; settings: SiteSettings }> => {
     let resultSettings = { ...staticSettings, ...settings };
     try {
-      const res = await fetch(`${BASE_URL}/settings`, {
+      const json = await safeFetchJson<{ settings?: SiteSettings }>(`${BASE_URL}/settings`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(settings)
       });
-      if (res.ok) {
-        const json = await res.json();
-        if (json?.settings) resultSettings = json.settings;
-      }
+      if (json?.settings) resultSettings = json.settings;
     } catch {
       // Local fallback
     }
@@ -103,11 +98,8 @@ export const api = {
 
   getGovernates: async (): Promise<string[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/governates`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
+      const data = await safeFetchJson<string[]>(`${BASE_URL}/governates`);
+      if (Array.isArray(data) && data.length > 0) return data;
     } catch {
       // Fallback to static
     }
@@ -116,11 +108,8 @@ export const api = {
 
   getFAQ: async (): Promise<FAQItem[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/faq`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
+      const data = await safeFetchJson<FAQItem[]>(`${BASE_URL}/faq`);
+      if (Array.isArray(data) && data.length > 0) return data;
     } catch {
       // Fallback to static
     }
@@ -132,13 +121,10 @@ export const api = {
   // ============================================================
   getServices: async (): Promise<Service[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/services`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setLocalData('invercool_services', data);
-          return data;
-        }
+      const data = await safeFetchJson<Service[]>(`${BASE_URL}/services`);
+      if (Array.isArray(data) && data.length > 0) {
+        setLocalData('invercool_services', data);
+        return data;
       }
     } catch {
       // Fallback to static
@@ -281,13 +267,10 @@ export const api = {
       if (params?.featured) query.set('featured', 'true');
       if (params?.importedEconomy) query.set('importedEconomy', 'true');
 
-      const res = await fetch(`${BASE_URL}/products?${query.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setLocalData('invercool_products', data);
-          return data;
-        }
+      const data = await safeFetchJson<Product[]>(`${BASE_URL}/products?${query.toString()}`);
+      if (Array.isArray(data) && data.length > 0) {
+        setLocalData('invercool_products', data);
+        return data;
       }
     } catch {
       // Fallback to static
@@ -431,11 +414,8 @@ export const api = {
       if (params?.search) query.set('search', params.search);
       if (params?.featured) query.set('featured', 'true');
 
-      const res = await fetch(`${BASE_URL}/projects?${query.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
+      const data = await safeFetchJson<Project[]>(`${BASE_URL}/projects?${query.toString()}`);
+      if (Array.isArray(data) && data.length > 0) return data;
     } catch {
       // Fallback
     }
@@ -558,11 +538,8 @@ export const api = {
         if (str) query = `?${str}`;
       }
 
-      const res = await fetch(`${BASE_URL}/gallery${query}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
+      const data = await safeFetchJson<GalleryItem[]>(`${BASE_URL}/gallery${query}`);
+      if (Array.isArray(data) && data.length > 0) return data;
     } catch {
       // Fallback
     }
@@ -639,11 +616,8 @@ export const api = {
   // ============================================================
   getApprovedReviews: async (): Promise<Review[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/reviews`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
+      const data = await safeFetchJson<Review[]>(`${BASE_URL}/reviews`);
+      if (Array.isArray(data) && data.length > 0) return data;
     } catch {
       // Fallback
     }
@@ -652,10 +626,10 @@ export const api = {
 
   getAllReviewsAdmin: async (): Promise<Review[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/admin/reviews`, {
+      const data = await safeFetchJson<Review[]>(`${BASE_URL}/admin/reviews`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (Array.isArray(data) && data.length > 0) return data;
     } catch {
       // Fallback
     }
@@ -761,10 +735,10 @@ export const api = {
 
   getMaintenanceRequestsAdmin: async (): Promise<MaintenanceRequest[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/admin/requests/maintenance`, {
+      const data = await safeFetchJson<MaintenanceRequest[]>(`${BASE_URL}/admin/requests/maintenance`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (Array.isArray(data)) return data;
     } catch {
       // Fallback
     }
@@ -828,10 +802,10 @@ export const api = {
 
   getQuoteRequestsAdmin: async (): Promise<QuoteRequest[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/admin/requests/quotes`, {
+      const data = await safeFetchJson<QuoteRequest[]>(`${BASE_URL}/admin/requests/quotes`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (Array.isArray(data)) return data;
     } catch {
       // Fallback
     }
@@ -887,10 +861,10 @@ export const api = {
 
   getTechnicianRequestsAdmin: async (): Promise<TechnicianRequest[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/admin/requests/technicians`, {
+      const data = await safeFetchJson<TechnicianRequest[]>(`${BASE_URL}/admin/requests/technicians`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (Array.isArray(data)) return data;
     } catch {
       // Fallback
     }
@@ -938,10 +912,10 @@ export const api = {
 
   getContactMessagesAdmin: async (): Promise<ContactMessage[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/admin/messages`, {
+      const data = await safeFetchJson<ContactMessage[]>(`${BASE_URL}/admin/messages`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (Array.isArray(data)) return data;
     } catch {
       // Fallback
     }
@@ -975,10 +949,10 @@ export const api = {
   // ============================================================
   getStats: async (): Promise<any> => {
     try {
-      const res = await fetch(`${BASE_URL}/stats`, {
+      const data = await safeFetchJson<any>(`${BASE_URL}/stats`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (data && typeof data === 'object') return data;
     } catch {
       // Fallback
     }
@@ -992,10 +966,10 @@ export const api = {
 
   getNotifications: async (): Promise<NotificationItem[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/notifications`, {
+      const data = await safeFetchJson<NotificationItem[]>(`${BASE_URL}/notifications`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (Array.isArray(data)) return data;
     } catch {
       // Fallback
     }

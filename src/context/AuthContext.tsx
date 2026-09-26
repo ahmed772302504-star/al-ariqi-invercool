@@ -29,24 +29,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verify session with backend if token exists
+    // If we have a local session or backend is offline, preserve the user without logging them out
     if (token) {
+      if (token.startsWith('local_session_') || token.startsWith('client_')) {
+        // Client-side validated session, keep active
+        setIsLoading(false);
+        return;
+      }
+
+      // Try verifying session with backend if available
       fetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then((res) => {
-          if (res.ok) return res.json();
-          throw new Error('Invalid token');
+        .then(async (res) => {
+          if (!res.ok) {
+            // If response is 401 explicitly, clear session. If 404 (e.g. Vercel static), do not destroy session!
+            if (res.status === 401) {
+              throw new Error('Unauthorized');
+            }
+            return null;
+          }
+          const ct = res.headers.get('content-type') || '';
+          if (ct.includes('application/json')) {
+            return res.json();
+          }
+          return null;
         })
         .then((userData) => {
-          setUser(userData);
-          localStorage.setItem('al_arriqi_admin_user', JSON.stringify(userData));
+          if (userData && userData.id) {
+            setUser(userData);
+            localStorage.setItem('al_arriqi_admin_user', JSON.stringify(userData));
+          }
         })
-        .catch(() => {
-          setToken(null);
-          setUser(null);
-          localStorage.removeItem('al_arriqi_admin_token');
-          localStorage.removeItem('al_arriqi_admin_user');
+        .catch((err) => {
+          if (err.message === 'Unauthorized') {
+            setToken(null);
+            setUser(null);
+            localStorage.removeItem('al_arriqi_admin_token');
+            localStorage.removeItem('al_arriqi_admin_user');
+          }
         })
         .finally(() => setIsLoading(false));
     } else {
