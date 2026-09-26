@@ -1,156 +1,178 @@
 import { SiteSettings, FAQItem } from '../types.js';
 
 export const staticGovernates: string[] = [
-  'صنعاء',
-  'عدن',
-  'تعز',
-  'حضرموت',
-  'الحديدة',
-  'إب',
-  'مأرب',
-  'ذمار',
-  'لحج',
-  'أبين',
-  'شبوة',
-  'المهرة',
-  'حجة',
-  'صعدة',
-  'عمران',
-  'البيضاء',
-  'المحويت',
-  'ريمة',
-  'سقطرى',
-  'الجوف',
-  'الضالع'
+  "صنعاء",
+  "عدن",
+  "تعز",
+  "إب",
+  "حضرموت",
+  "الحديدة",
+  "ذمار",
+  "مأرب",
+  "شبوة",
+  "المهرة",
+  "صعدة",
+  "حجة",
+  "لحج",
+  "أبين",
+  "الضالع",
+  "البيضاء",
+  "عمران",
+  "الجوف",
+  "المحويت",
+  "ريمة",
+  "سقطرى"
 ];
 
 export const staticFAQ: FAQItem[] = [
   {
-    id: 'faq-1',
-    questionAr: 'ما هي خدمات التكييف والتبريد التي تقدمها العريقي إنفركول؟',
-    questionEn: 'What HVAC & Refrigeration services does AL-ARRIQI INVERCOOL provide?',
-    answerAr:
-      'نقدم حلولاً هندسية متكاملة تشمل تصميم وتوريد وتركيب وصيانة أنظمة التكييف المركزي، وحدات VRF/VRV، غرف ومستودعات التبريد والتجميد، تصميم وتجميع طبالين ولوحات التحكم الكهربائية، صيانة الشيلرات، وتوفير قطع الغيار الأصلية.',
-    answerEn:
-      'We provide complete engineering solutions including central HVAC, VRF/VRV units, cold storage rooms, electrical control panel assembly, chiller maintenance, and genuine spare parts.',
-    category: 'عام',
-    order: 1
+    "id": "faq-1",
+    "questionAr": "ما هي الخدمات الرئيسية التي تقدمها شركة العريقي إنفركول؟",
+    "questionEn": "What are the main services provided by AL-ARRIQI INVERCOOL?",
+    "answerAr": "نقدم حلولاً متكاملة تشمل صيانة وتركيب أجهزة التكييف بمختلف أنواعها، أنظمة التكييف المركزي وVRF، أنظمة التبريد المركزي، تصميم وبناء غرف وثلاجات التبريد الكبيرة، بيع قطع الغيار ومستلزمات HVAC، وتوريد الأجهزة الاقتصادية الموفرة للطاقة.",
+    "answerEn": "We provide full-spectrum HVAC and refrigeration solutions: installation, maintenance, central VRF systems, walk-in cold rooms, industrial refrigeration, genuine spare parts, and imported high-efficiency inverter AC units.",
+    "category": "عام",
+    "order": 1
   },
   {
-    id: 'faq-2',
-    questionAr: 'هل تغطي خدماتكم جميع محافظات الجمهورية اليمنية؟',
-    questionEn: 'Do your services cover all governorates across Yemen?',
-    answerAr:
-      'نعم، تمتلك العريقي إنفركول فرقاً هندسية متخصصة ومجهزة للانتقال وتقديم خدمات التركيب، التشغيل، والصيانة الطارئة في صنعاء، عدن، تعز، الحديدة، إب، حضرموت، مأرب، ذمار وكافة المحافظات.',
-    answerEn:
-      'Yes, we deploy specialized engineering crews for installation, commissioning, and emergency maintenance across Sanaa, Aden, Taiz, Hodeidah, Ibb, Hadramout, Marib, Dhamar, and all regions.',
-    category: 'التغطية',
-    order: 2
+    "id": "faq-2",
+    "questionAr": "هل تقدمون خدمات الصيانة في جميع محافظات الجمهورية اليمنية؟",
+    "questionEn": "Do you provide services across all governorates in Yemen?",
+    "answerAr": "نعم، نوفر خدمات التوريد والتركيب والصيانة والمشاريع الكبيرة لجميع محافظات اليمن (صنعاء، عدن، تعز، حضرموت، إب، الحديدة، مأرب، وبقية المحافظات).",
+    "answerEn": "Yes, we execute large projects, supply, and maintenance across all Yemen governorates including Sanaa, Aden, Taiz, Hadramout, Ibb, Hodeidah, Marib, and beyond.",
+    "category": "التغطية",
+    "order": 2
   },
   {
-    id: 'faq-3',
-    questionAr: 'ما هي مميزات طبالين ولوحات التحكم الكهربائية التي تصممونها؟',
-    questionEn: 'What features do your electrical control panels provide?',
-    answerAr:
-      'طبالين ولوحات التحكم لدينا مصممة وفق أعلى معايير الأمان الصناعية، وتتضمن حماية كاملة للضواغط من سقوط الفازات وتذبذب التيار، أنظمة إنذار مبكر صوتي وضوئي، مكونات صناعية أصلية من شنايدر وإل جي، وتصميم منظم يسهل الصيانة الدورية.',
-    answerEn:
-      'Our panels feature full compressor protection against voltage spikes/phase loss, early warning alarms, genuine industrial components (Schneider/LG/ABB), and organized schematics for effortless maintenance.',
-    category: 'لوحات التحكم',
-    order: 3
+    "id": "faq-3",
+    "questionAr": "كيف يمكنني طلب خدمة أو إرسال فني متخصص؟",
+    "questionEn": "How can I book a service or request a technician visit?",
+    "answerAr": "يمكنك بسهولة استخدام صفحة \"اطلب خدمة\" أو \"اطلب فنيًا\" على الموقع مع رفع تفاصيل المشكلة وصور العطل، أو التواصل المباشر عبر الهاتف 770931413 أو WhatsApp بنفس الرقم.",
+    "answerEn": "You can easily use the \"Request Service\" or \"Request Technician\" forms on our website with photos of the issue, or directly call or WhatsApp us on 770931413.",
+    "category": "الطلبات",
+    "order": 3
   },
   {
-    id: 'faq-4',
-    questionAr: 'هل توفرون ضماناً معتمداً على الأجهزة والصيانة؟',
-    questionEn: 'Do you offer certified warranty on units and maintenance?',
-    answerAr:
-      'نعم، نمنح ضمانات رسمية معتمدة على كافة أعمال التركيب والصيانة وتجميع اللوحات الكهربائية، بالإضافة إلى ضمان الوكيل على الأجهزة والضواغط وقطع الغيار الأصلية.',
-    answerEn:
-      'Yes, official certified warranties are provided on all installations, maintenance, control panels, and brand warranty on genuine compressors and units.',
-    category: 'الضمان',
-    order: 4
+    "id": "faq-4",
+    "questionAr": "هل تتوفر لديكم أجهزة تكييف اقتصادية موفرة للطاقة متوافقة مع الطاقة الشمسية؟",
+    "questionEn": "Do you offer energy-efficient AC units compatible with solar power?",
+    "answerAr": "نعم، نوفر أجهزة تكييف حديثة مستوردة تعمل بتقنية الإنفرتر الذكية الموفرة للكهرباء بشكل كبير وتتوافق مع منظومات الطاقة الشمسية والمولدات.",
+    "answerEn": "Yes, we supply modern imported inverter air conditioners engineered for exceptional power savings, fully suited for solar setups and generators.",
+    "category": "المنتجات",
+    "order": 4
   },
   {
-    id: 'faq-5',
-    questionAr: 'كيف يمكنني طلب زيارة فني أو طلب عرض سعر لمشروعي؟',
-    questionEn: 'How can I request a technician visit or get a project quote?',
-    answerAr:
-      'يمكنك إرسال طلبك مباشرة عبر الموقع من صفحة «طلب عرض سعر» أو «طلب فني»، أو عبر الاتصال الهاتفي المباشر بالمهندس على الرقم 770931413، أو محادثتنا عبر الواتساب على مدار الساعة.',
-    answerEn:
-      'You can submit a request directly via our quote or technician forms, call 770931413 directly, or text our 24/7 WhatsApp support.',
-    category: 'الطلبات',
-    order: 5
+    "id": "faq-5",
+    "questionAr": "هل تصممون وتنفذون غرف وثلاجات التبريد للمصانع والمستشفيات؟",
+    "questionEn": "Do you design and install custom cold rooms for factories and hospitals?",
+    "answerAr": "نعم، نتخصص في تصميم وتجهيز غرف التبريد والتجميد ذات السعات الكبيرة باستخدام أفضل ألواح الساندوتش بانل وأنظمة التحكم الرقمية المطابقة للمعايير الهندسية والصحية.",
+    "answerEn": "Yes, we specialize in high-capacity walk-in cold rooms and blast freezers using certified polyurethane sandwich panels and precision digital controls.",
+    "category": "المشاريع",
+    "order": 5
   }
 ];
 
 export const staticSettings: SiteSettings = {
-  companyNameAr: 'العريقي إنفركول للتكييف والتبريد',
-  companyNameEn: 'AL-ARRIQI INVERCOOL HVAC & REFRIGERATION',
-  brandNameAr: 'العريقي إنفركول',
-  brandNameEn: 'AL-ARRIQI INVERCOOL',
-  taglineAr: 'حلول متكاملة للتكييف والتبريد',
-  taglineEn: 'Integrated Air Conditioning & Refrigeration Solutions',
-  phone: '770931413',
-  companyPhone: '770931413',
-  phonePrimary: '770931413',
-  phoneSecondary: '772302504',
-  whatsapp: '770931413',
-  whatsappPrimary: '770931413',
-  facebookUrl: 'https://facebook.com',
-  email: 'info@invercool-ye.com',
-  addressAr: 'الجمهورية اليمنية - صنعاء - شارع الستين',
-  addressEn: 'Sanaa, Yemen - Sixtieth St.',
-  workHoursAr: 'السبت - الخميس: 8:00 صباحاً - 9:00 مساءً | طوارئ الصيانة: 24 ساعة',
-  workHoursEn: 'Sat - Thu: 8:00 AM - 9:00 PM | Emergency HVAC: 24/7',
-  developerName: 'م/ أحمد وليد العريقي',
-  developerPhone1: '772302504',
-  developerPhone2: '738603124',
-  heroTitleAr: 'حلول التكييف والتبريد الذكية والموفرة للطاقة باليمن',
-  heroTitleEn: 'Smart, Energy-Efficient HVAC & Cooling Solutions in Yemen',
-  heroSubtitleAr: 'ريادة هندسية في أنظمة التكييف المركزي، غرف التبريد، والأنظمة الاقتصادية',
-  heroSubtitleEn: 'Engineering Leadership in Central Air Conditioning & Cold Storage',
-  heroDescAr:
-    'نقدم أحدث حلول التبريد والتكييف المبتكرة للقطاعات التجارية، الصناعية، والطبية والسكنية، بأعلى معايير الكفاءة وضمان معتمد.',
-  heroDescEn:
-    'Delivering cutting-edge cooling and HVAC solutions for commercial, industrial, medical, and residential sectors with proven reliability.',
-  aboutDescAr:
-    'العريقي إنفركول هي الشركة اليمنية الرائدة في تقديم الحلول الهندسية المتكاملة في أنظمة التكييف والتبريد وتصميم وتجميع طبالين ولوحات التحكم الذكية.',
-  aboutDescEn:
-    'AL-ARRIQI INVERCOOL is Yemen leading engineering firm in integrated HVAC, commercial refrigeration, and smart electrical control panel assembly.',
-  whyUs: [
+  "companyNameAr": "العريقي إنفركول",
+  "companyNameEn": "AL-ARRIQI INVERCOOL",
+  "taglineAr": "حلول متكاملة للتكييف والتبريد",
+  "taglineEn": "Integrated Air Conditioning & Refrigeration Solutions",
+  "phone": "770931413",
+  "whatsapp": "770931413",
+  "facebookUrl": "https://facebook.com",
+  "email": "info@al-arriqi-invercool.com",
+  "addressAr": "الجمهورية اليمنية - نخدمكم في جميع محافظات الجمهورية",
+  "addressEn": "Republic of Yemen - Serving You Across All Governorates",
+  "workHoursAr": "السبت - الخميس: 8:00 صباحاً - 8:00 مساءً | طوارئ الصيانة 24/7",
+  "workHoursEn": "Saturday - Thursday: 8:00 AM - 8:00 PM | 24/7 Emergency Support",
+  "developerName": "م/ أحمد وليد العريقي",
+  "developerPhone1": "772302504",
+  "developerPhone2": "738603124",
+  "heroTitleAr": "العريقي إنفركول",
+  "heroTitleEn": "AL-ARRIQI INVERCOOL",
+  "heroSubtitleAr": "حلول متكاملة للتكييف والتبريد",
+  "heroSubtitleEn": "Integrated Air Conditioning & Refrigeration Solutions",
+  "heroDescAr": "الريادة الهندسية في تصميم وتوريد وتركيب وصيانة أنظمة التكييف والتبريد المركزي وغرف التبريد الكبرى داخل الجمهورية اليمنية بأعلى مقاييس الجودة والاعتمادية.",
+  "heroDescEn": "Engineering leadership in designing, supplying, installing, and servicing central HVAC, refrigeration systems, and large cold rooms across Yemen with highest precision and reliability.",
+  "aboutDescAr": "تعتبر شركة العريقي إنفركول إحدى الشركات الهندسية المتخصصة والرائدة في مجال التكييف والتبريد وأنظمة HVAC والتبريد المركزي داخل الجمهورية اليمنية. نلتزم بأعلى المعايير الهندسية الدقيقة لتقديم حلول مبتكرة للمنشآت التجارية والصناعية والمستشفيات والفنادق والمشاريع السكنية مع التزام تام بجودة التنفيذ وخدمة ما بعد البيع في كافة المحافظات.",
+  "aboutDescEn": "AL-ARRIQI INVERCOOL is a premier engineering firm specializing in air conditioning, refrigeration, HVAC systems, and central cold storage in Yemen. We deliver high-precision climate control for commercial, industrial, healthcare, hospitality, and residential projects with strict adherence to engineering standards.",
+  "whyUs": [
     {
-      icon: 'ShieldCheck',
-      titleAr: 'دقة هندسية وتشخيص علمي للأعطال',
-      titleEn: 'Engineering Precision & Scientific Diagnostics',
-      descAr: 'استخدام أجهزة قياس الضغط الرقمية وكواشف التسريب الحديثة لضمان دقة الإصلاح.',
-      descEn: 'Using digital manifolds and advanced leak detectors for pinpoint repair.'
+      "icon": "Settings",
+      "titleAr": "حلول هندسية متقدمة",
+      "titleEn": "Advanced Engineering Solutions",
+      "descAr": "دراسة وتصميم أنظمة التكييف والتبريد بحسابات أحمال دقيقة لضمان أعلى أداء وكفاءة.",
+      "descEn": "Design and thermal sizing executed with engineering rigor for optimal performance."
     },
     {
-      icon: 'Zap',
-      titleAr: 'حلول موفرة للطاقة متوافقة مع الطاقة الشمسية',
-      titleEn: 'Solar-Ready Energy Saving Systems',
-      descAr: 'تكنولوجيا إنفرتر متطورة تقلل استهلاك الطاقة وتناسب تشغيل المولدات والطاقة البديلة.',
-      descEn: 'Inverter technology tailored for solar setups and generator stability in Yemen.'
+      "icon": "Clock",
+      "titleAr": "سرعة الاستجابة والالتزام",
+      "titleEn": "Fast Response & Commitment",
+      "descAr": "فريق فني متأهب لتقديم الدعم السريع وخدمات الطوارئ مع الالتزام التام بالمواعيد.",
+      "descEn": "Rapid dispatch and dependable adherence to installation and maintenance schedules."
     },
     {
-      icon: 'Clock',
-      titleAr: 'سرعة الاستجابة والجاهزية للطوارئ 24/7',
-      titleEn: '24/7 Rapid Emergency Response',
-      descAr: 'فرق ميدانية جاهزة لإنقاذ مخزون غرف التبريد والمستشفيات في أسرع وقت.',
-      descEn: 'Dedicated field crews ready to service critical cold rooms and facilities.'
+      "icon": "Target",
+      "titleAr": "التشخيص الدقيق للأعطال",
+      "titleEn": "Precision Diagnostics",
+      "descAr": "أحدث أجهزة الكشف الإلكتروني لتحديد الأعطال الميكانيكية والكهربائية وحلها جذرياً.",
+      "descEn": "Digital equipment to trace electrical and mechanical root causes reliably."
     },
     {
-      icon: 'Wrench',
-      titleAr: 'قطع غيار أصلية وضمان معتمد',
-      titleEn: 'Genuine OEM Parts & Certified Warranty',
-      descAr: 'ضواغط ومكونات أصلية من كبرى الشركات العالمية مع ضمان رسمي على القطع والتركيب.',
-      descEn: 'Original compressors and parts from top global brands with certified warranty.'
+      "icon": "Award",
+      "titleAr": "جودة التنفيذ والضمان",
+      "titleEn": "Quality Execution & Warranty",
+      "descAr": "استخدام أجود المواد وقطع الغيار الأصلية مع ضمان معتمد على جميع الأعمال المنفذة.",
+      "descEn": "Top-tier materials and original spare parts backed by dependable guarantees."
+    },
+    {
+      "icon": "ShieldCheck",
+      "titleAr": "برامج الصيانة الوقائية",
+      "titleEn": "Preventive Care Programs",
+      "descAr": "عقود صيانة دورية تحمي منشأتك من التوقف المفاجئ وتقلل استهلاك الطاقة بشكل ملموس.",
+      "descEn": "Periodic inspection contracts preventing downtime and curbing electric costs."
+    },
+    {
+      "icon": "MapPin",
+      "titleAr": "تغطية جميع محافظات اليمن",
+      "titleEn": "Coverage Across Yemen",
+      "descAr": "خدماتنا تصل إليكم في كافة محافظات الجمهورية اليمنية بخبرة وكفاءة عالية.",
+      "descEn": "Full deployment capability across all 22 governorates of Yemen."
     }
   ],
-  governatesCovered: staticGovernates,
-  logoUrl: '/logo.png',
-  logoIconUrl: '/logo-icon.png',
-  watermarkUrl: '/logo.png',
-  aboutImageUrl: '/images/about-engineering.jpg',
-  updatedAt: Date.now(),
-  logoUpdatedAt: Date.now()
+  "governatesCovered": [
+    "صنعاء",
+    "عدن",
+    "تعز",
+    "إب",
+    "حضرموت",
+    "الحديدة",
+    "ذمار",
+    "مأرب",
+    "شبوة",
+    "المهرة",
+    "صعدة",
+    "حجة",
+    "لحج",
+    "أبين",
+    "الضالع",
+    "البيضاء",
+    "عمران",
+    "الجوف",
+    "المحويت",
+    "ريمة",
+    "سقطرى"
+  ],
+  "logoUrl": "/logo.png",
+  "logoIconUrl": "/logo-icon.png",
+  "watermarkUrl": "/logo.png",
+  "brandNameAr": "العريقي إنفركول",
+  "brandNameEn": "AL-ARRIQI INVERCOOL",
+  "companyPhone": "770931413",
+  "phonePrimary": "770931413",
+  "phoneSecondary": "772302504",
+  "whatsappPrimary": "770931413",
+  "updatedAt": 1790270025909,
+  "logoUpdatedAt": 1790270025909,
+  "aboutImageUrl": "/images/about-engineering.jpg"
 };

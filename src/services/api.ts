@@ -33,6 +33,24 @@ function getAuthHeaders(): HeadersInit {
   return headers;
 }
 
+// Local Storage Helpers for Netlify & Offline Persistence
+const getLocalData = <T>(key: string): T | null => {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const setLocalData = <T>(key: string, data: T): void => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(data));
+  } catch {}
+};
+
 export const api = {
   // ============================================================
   // Settings, FAQ & Governates (Static Data First)
@@ -49,30 +67,38 @@ export const api = {
       if (res.ok) {
         const data = await res.json();
         if (data && typeof data === 'object') {
-          return { ...staticSettings, ...data };
+          const merged = { ...staticSettings, ...data };
+          setLocalData('invercool_settings', merged);
+          return merged;
         }
       }
     } catch {
       // Fallback silently to static settings
     }
+    const local = getLocalData<SiteSettings>('invercool_settings');
+    if (local) return { ...staticSettings, ...local };
     return staticSettings;
   },
 
   updateSettings: async (
     settings: Partial<SiteSettings>
   ): Promise<{ success: boolean; settings: SiteSettings }> => {
+    let resultSettings = { ...staticSettings, ...settings };
     try {
       const res = await fetch(`${BASE_URL}/settings`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(settings)
       });
-      if (res.ok) return res.json();
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.settings) resultSettings = json.settings;
+      }
     } catch {
       // Local fallback
     }
-    const merged = { ...staticSettings, ...settings };
-    return { success: true, settings: merged };
+    setLocalData('invercool_settings', resultSettings);
+    return { success: true, settings: resultSettings };
   },
 
   getGovernates: async (): Promise<string[]> => {
@@ -109,11 +135,16 @@ export const api = {
       const res = await fetch(`${BASE_URL}/services`);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
+        if (Array.isArray(data) && data.length > 0) {
+          setLocalData('invercool_services', data);
+          return data;
+        }
       }
     } catch {
       // Fallback to static
     }
+    const local = getLocalData<Service[]>('invercool_services');
+    if (Array.isArray(local) && local.length > 0) return local;
     return staticServices;
   },
 
@@ -122,10 +153,18 @@ export const api = {
       const res = await fetch(`${BASE_URL}/admin/services`, {
         headers: getAuthHeaders()
       });
-      if (res.ok) return res.json();
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setLocalData('invercool_services', data);
+          return data;
+        }
+      }
     } catch {
       // Fallback to static
     }
+    const local = getLocalData<Service[]>('invercool_services');
+    if (Array.isArray(local) && local.length > 0) return local;
     return staticServices;
   },
 
@@ -136,7 +175,8 @@ export const api = {
     } catch {
       // Fallback to static search
     }
-    const found = staticServices.find(
+    const list = getLocalData<Service[]>('invercool_services') || staticServices;
+    const found = list.find(
       (s) => s.slug === idOrSlug || s.id === idOrSlug
     );
     if (found) return found;
@@ -144,17 +184,18 @@ export const api = {
   },
 
   createService: async (service: Partial<Service>): Promise<Service> => {
+    let created: Service | null = null;
     try {
       const res = await fetch(`${BASE_URL}/services`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(service)
       });
-      if (res.ok) return res.json();
+      if (res.ok) created = await res.json();
     } catch {
       // Fallback
     }
-    const newService: Service = {
+    const newService: Service = created || {
       id: `srv-${Date.now()}`,
       slug: service.slug || `service-${Date.now()}`,
       titleAr: service.titleAr || '',
@@ -164,29 +205,44 @@ export const api = {
       descAr: service.descAr || '',
       descEn: service.descEn || '',
       iconName: service.iconName || 'Wrench',
-      image: service.image || '/images/panel-cover.jpg',
+      image: service.image || '/images/gallery/gallery-chiller-service.jpg',
       featuresAr: service.featuresAr || [],
       featuresEn: service.featuresEn || [],
       isFeatured: !!service.isFeatured,
       isActive: true,
       order: service.order || 99
     };
+    const list = getLocalData<Service[]>('invercool_services') || [...staticServices];
+    list.unshift(newService);
+    setLocalData('invercool_services', list);
     return newService;
   },
 
   updateService: async (id: string, service: Partial<Service>): Promise<Service> => {
+    let updatedService: Service | null = null;
     try {
       const res = await fetch(`${BASE_URL}/services/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(service)
       });
-      if (res.ok) return res.json();
+      if (res.ok) updatedService = await res.json();
     } catch {
       // Fallback
     }
-    const found = staticServices.find((s) => s.id === id) || staticServices[0];
-    return { ...found, ...service };
+    const currentList = getLocalData<Service[]>('invercool_services') || [...staticServices];
+    const index = currentList.findIndex((s) => s.id === id);
+    if (index !== -1) {
+      currentList[index] = { ...currentList[index], ...service };
+      if (!updatedService) updatedService = currentList[index];
+    } else {
+      const found = staticServices.find((s) => s.id === id) || staticServices[0];
+      const merged = { ...found, ...service };
+      currentList.push(merged);
+      if (!updatedService) updatedService = merged;
+    }
+    setLocalData('invercool_services', currentList);
+    return updatedService || { ...staticServices[0], ...service };
   },
 
   deleteService: async (id: string): Promise<void> => {
@@ -198,6 +254,9 @@ export const api = {
     } catch {
       // Silently pass
     }
+    const currentList = getLocalData<Service[]>('invercool_services') || [...staticServices];
+    const filtered = currentList.filter((s) => s.id !== id);
+    setLocalData('invercool_services', filtered);
   },
 
   // ============================================================
@@ -225,14 +284,18 @@ export const api = {
       const res = await fetch(`${BASE_URL}/products?${query.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
+        if (Array.isArray(data) && data.length > 0) {
+          setLocalData('invercool_products', data);
+          return data;
+        }
       }
     } catch {
       // Fallback to static
     }
 
-    // Filter static products
-    let list = [...staticProducts];
+    // Filter products from local cache or static
+    const baseList = getLocalData<Product[]>('invercool_products') || staticProducts;
+    let list = [...baseList];
     if (params?.category && params.category !== 'all') {
       list = list.filter((p) => p.category === params.category);
     }
@@ -264,7 +327,8 @@ export const api = {
     } catch {
       // Fallback
     }
-    const found = staticProducts.find(
+    const list = getLocalData<Product[]>('invercool_products') || staticProducts;
+    const found = list.find(
       (p) => p.slug === idOrSlug || p.id === idOrSlug
     );
     if (found) return found;
@@ -272,17 +336,18 @@ export const api = {
   },
 
   createProduct: async (product: Partial<Product>): Promise<Product> => {
+    let created: Product | null = null;
     try {
       const res = await fetch(`${BASE_URL}/products`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(product)
       });
-      if (res.ok) return res.json();
+      if (res.ok) created = await res.json();
     } catch {
       // Fallback
     }
-    const newProduct: Product = {
+    const newProduct: Product = created || {
       id: `prod-${Date.now()}`,
       slug: product.slug || `product-${Date.now()}`,
       nameAr: product.nameAr || '',
@@ -301,22 +366,37 @@ export const api = {
       isImportedEconomy: !!product.isImportedEconomy,
       createdAt: new Date().toISOString()
     };
+    const list = getLocalData<Product[]>('invercool_products') || [...staticProducts];
+    list.unshift(newProduct);
+    setLocalData('invercool_products', list);
     return newProduct;
   },
 
   updateProduct: async (id: string, product: Partial<Product>): Promise<Product> => {
+    let updatedProduct: Product | null = null;
     try {
       const res = await fetch(`${BASE_URL}/products/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(product)
       });
-      if (res.ok) return res.json();
+      if (res.ok) updatedProduct = await res.json();
     } catch {
       // Fallback
     }
-    const found = staticProducts.find((p) => p.id === id) || staticProducts[0];
-    return { ...found, ...product };
+    const currentList = getLocalData<Product[]>('invercool_products') || [...staticProducts];
+    const index = currentList.findIndex((p) => p.id === id);
+    if (index !== -1) {
+      currentList[index] = { ...currentList[index], ...product };
+      if (!updatedProduct) updatedProduct = currentList[index];
+    } else {
+      const found = staticProducts.find((p) => p.id === id) || staticProducts[0];
+      const merged = { ...found, ...product };
+      currentList.push(merged);
+      if (!updatedProduct) updatedProduct = merged;
+    }
+    setLocalData('invercool_products', currentList);
+    return updatedProduct || { ...staticProducts[0], ...product };
   },
 
   deleteProduct: async (id: string): Promise<void> => {
@@ -328,6 +408,9 @@ export const api = {
     } catch {
       // Silently pass
     }
+    const currentList = getLocalData<Product[]>('invercool_products') || [...staticProducts];
+    const filtered = currentList.filter((p) => p.id !== id);
+    setLocalData('invercool_products', filtered);
   },
 
   // ============================================================

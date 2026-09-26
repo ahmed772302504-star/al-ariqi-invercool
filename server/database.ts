@@ -1031,6 +1031,40 @@ class DatabaseManager {
       const tempPath = `${DB_FILE}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(this.db, null, 2), 'utf-8');
       fs.renameSync(tempPath, DB_FILE);
+
+      // Automatically sync static TS files so that Git commits & Netlify static builds always carry latest data & images
+      const staticDir = path.join(process.cwd(), 'src', 'data');
+      if (fs.existsSync(staticDir)) {
+        try {
+          fs.writeFileSync(
+            path.join(staticDir, 'staticServices.ts'),
+            `import { Service } from '../types.js';\n\nexport const staticServices: Service[] = ${JSON.stringify(this.db.services, null, 2)};\n`,
+            'utf-8'
+          );
+          fs.writeFileSync(
+            path.join(staticDir, 'staticProducts.ts'),
+            `import { Product } from '../types.js';\n\nexport const staticProducts: Product[] = ${JSON.stringify(this.db.products, null, 2)};\n`,
+            'utf-8'
+          );
+          fs.writeFileSync(
+            path.join(staticDir, 'staticProjects.ts'),
+            `import { Project } from '../types.js';\n\nexport const staticProjects: Project[] = ${JSON.stringify(this.db.projects, null, 2)};\n`,
+            'utf-8'
+          );
+          fs.writeFileSync(
+            path.join(staticDir, 'staticGallery.ts'),
+            `import { GalleryItem } from '../types.js';\n\nexport const staticGallery: GalleryItem[] = ${JSON.stringify(this.db.gallery, null, 2)};\n`,
+            'utf-8'
+          );
+          fs.writeFileSync(
+            path.join(staticDir, 'staticSettings.ts'),
+            `import { SiteSettings, FAQItem } from '../types.js';\n\nexport const staticGovernates: string[] = ${JSON.stringify(YEMEN_GOVERNATES, null, 2)};\n\nexport const staticFAQ: FAQItem[] = ${JSON.stringify(this.db.faq || [], null, 2)};\n\nexport const staticSettings: SiteSettings = ${JSON.stringify(this.db.settings, null, 2)};\n`,
+            'utf-8'
+          );
+        } catch (syncErr) {
+          console.warn('Could not sync static .ts data files:', syncErr);
+        }
+      }
     } catch (err) {
       console.error('Failed to write db.json atomically:', err);
     }

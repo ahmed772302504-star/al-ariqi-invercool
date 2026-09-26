@@ -1,7 +1,16 @@
 import React, { useRef, useState } from 'react';
-import { Upload, Image as ImageIcon, Check, Loader2, AlertCircle, Sparkles, FolderOpen } from 'lucide-react';
-import { api } from '../../services/api.js';
-import { compressImage, formatFileSize } from '../../utils/imageOptimizer.js';
+import {
+  Upload,
+  Image as ImageIcon,
+  Loader2,
+  AlertCircle,
+  X,
+  RefreshCw,
+  Trash2,
+  Layers,
+  Check
+} from 'lucide-react';
+import { uploadToImgBB } from '../../utils/cloudImageUploader.js';
 
 interface ImageUploaderProps {
   label: string;
@@ -10,24 +19,35 @@ interface ImageUploaderProps {
   aspectHint?: string;
   placeholder?: string;
   required?: boolean;
-  maxWidth?: number;
-  maxHeight?: number;
-  quality?: number;
   multiple?: boolean;
   onMultipleChange?: (newUrls: string[]) => void;
   buttonText?: string;
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
 }
+
+const PRESET_ASSETS = [
+  { name: 'وحدات تكييف VRF مركزية', url: '/images/products/vrf-system.jpg', cat: 'تكييف' },
+  { name: 'وحدات تكثيف غرف التبريد والتجميد', url: '/images/products/coldroom-condensing.jpg', cat: 'تبريد' },
+  { name: 'مكيفات إسبليت إنفرتر موفرة للطاقة', url: '/images/products/split-eco-inverter.jpg', cat: 'تكييف' },
+  { name: 'مكيفات دولابي للمساجد والصالات', url: '/images/products/floor-standing-ac.jpg', cat: 'تكييف' },
+  { name: 'ضواغط ومكونات تبريد أصلية', url: '/images/products/copeland-compressor.jpg', cat: 'قطع غيار' },
+  { name: 'شيلرات ومبردات مياه صناعية', url: '/images/gallery/gallery-chiller-service.jpg', cat: 'صيانة' },
+  { name: 'مستودعات وغرف تبريد الخضار', url: '/images/projects/sanaa-cold-storage.jpg', cat: 'مشاريع' },
+  { name: 'ثلاجات ومسالخ الدواجن واللحوم', url: '/images/projects/ibb-poultry-freezer.jpg', cat: 'مشاريع' },
+  { name: 'أنظمة تبريد خطوط ومصانع المياه', url: '/images/projects/dhamar-water-freezing.jpg', cat: 'مشاريع' },
+  { name: 'لوحات وطبالين التحكم الكهربائية', url: '/images/panel-cover.jpg', cat: 'طبالين' },
+  { name: 'تمديدات وتصنيع مجاري الهواء ودكت', url: '/images/gallery/gallery-duct-installation.jpg', cat: 'تهوية' },
+  { name: 'صيانة وفحص دورات الفريون', url: '/images/gallery/gallery-split-maintenance.jpg', cat: 'صيانة' }
+];
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
   label,
   value,
   onChange,
-  aspectHint = 'JPG, PNG, WebP (يتم الضغط والتحسين التلقائي)',
-  placeholder = 'https://... أو اختر صورة من جهازك/الاستوديو',
+  aspectHint,
   required = false,
-  maxWidth = 1600,
-  maxHeight = 1600,
-  quality = 0.82,
   multiple = false,
   onMultipleChange,
   buttonText
@@ -37,36 +57,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [uploadProgressText, setUploadProgressText] = useState('');
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
-  const [optimizationInfo, setOptimizationInfo] = useState<{ original: string; compressed: string; savings: string } | null>(null);
+  const [showPresets, setShowPresets] = useState(false);
+  const [successNotice, setSuccessNotice] = useState(false);
 
-  const processSingleFile = async (file: File) => {
-    if (!file.type.startsWith('image/') && !file.name?.match(/\.(jpg|jpeg|png|webp|svg|gif|avif|heic|bmp)$/i)) {
-      throw new Error(`الملف "${file.name}" ليس صورة صالحة`);
+  const processSingleFile = async (file: File): Promise<string> => {
+    // Basic safety check for clearly invalid non-media files
+    if (file.name && file.name.match(/\.(pdf|doc|docx|zip|rar|exe|apk)$/i)) {
+      throw new Error(`الملف "${file.name}" ليس صورة صالحة.`);
     }
 
-    const originalSize = file.size;
-    const { dataUrl, sizeBytes } = await compressImage(file, {
-      maxWidth,
-      maxHeight,
-      quality,
-      format: 'image/webp'
-    });
-
-    // Extension detection
-    let ext = '.webp';
-    if (dataUrl.startsWith('data:image/svg+xml')) ext = '.svg';
-    else if (dataUrl.startsWith('data:image/png')) ext = '.png';
-    else if (dataUrl.startsWith('data:image/jpeg')) ext = '.jpg';
-    else if (dataUrl.startsWith('data:image/gif')) ext = '.gif';
-
-    const filename = file.name.replace(/\.[^/.]+$/, '') + ext;
-    const res = await api.uploadMedia(dataUrl, filename);
-
-    return {
-      url: res.url,
-      originalSize,
-      sizeBytes
-    };
+    setUploadProgressText('جاري الرفع المباشر إلى السحابة...');
+    const result = await uploadToImgBB(file, file.name);
+    return result.url;
   };
 
   const handleFiles = async (fileList: FileList | File[]) => {
@@ -75,74 +77,44 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     setUploading(true);
     setError('');
-    setOptimizationInfo(null);
+    setSuccessNotice(false);
 
     try {
       if (files.length === 1) {
-        setUploadProgressText('جاري معالجة وضغط الصورة...');
-        const result = await processSingleFile(files[0]);
-
-        const savingsPercent =
-          result.originalSize > result.sizeBytes
-            ? Math.round(((result.originalSize - result.sizeBytes) / result.originalSize) * 100)
-            : 0;
-
-        if (savingsPercent > 0) {
-          setOptimizationInfo({
-            original: formatFileSize(result.originalSize),
-            compressed: formatFileSize(result.sizeBytes),
-            savings: `${savingsPercent}%`
-          });
-        }
-
-        onChange(result.url);
+        setUploadProgressText('جاري رفع الصورة إلى ImgBB...');
+        const cloudUrl = await processSingleFile(files[0]);
+        onChange(cloudUrl);
         if (onMultipleChange) {
-          onMultipleChange([result.url]);
+          onMultipleChange([cloudUrl]);
         }
+        setSuccessNotice(true);
+        setTimeout(() => setSuccessNotice(false), 3000);
       } else {
-        // Multiple files processing
-        setUploadProgressText(`جاري معالجة وتجهيز ${files.length} صور...`);
+        setUploadProgressText(`جاري رفع ${files.length} صور إلى السحابة...`);
         const uploadedUrls: string[] = [];
-        let totalOriginal = 0;
-        let totalCompressed = 0;
-
         for (let i = 0; i < files.length; i++) {
-          setUploadProgressText(`جاري معالجة الصورة (${i + 1} من ${files.length})...`);
+          setUploadProgressText(`جاري رفع الصورة (${i + 1} من ${files.length})...`);
           try {
-            const res = await processSingleFile(files[i]);
-            uploadedUrls.push(res.url);
-            totalOriginal += res.originalSize;
-            totalCompressed += res.sizeBytes;
-          } catch (fileErr: any) {
-            console.warn(`Could not process file ${files[i].name}`, fileErr);
+            const url = await processSingleFile(files[i]);
+            uploadedUrls.push(url);
+          } catch (fileErr) {
+            console.warn(`Could not upload ${files[i].name}`, fileErr);
           }
         }
 
         if (uploadedUrls.length === 0) {
-          throw new Error('لم يتم رفع أي صورة بنجاح، يرجى التأكد من صيغ الصور');
+          throw new Error('لم يتم رفع أي صورة بنجاح. يرجى التأكد من اتصال الإنترنت.');
         }
 
-        const overallSavings =
-          totalOriginal > totalCompressed
-            ? Math.round(((totalOriginal - totalCompressed) / totalOriginal) * 100)
-            : 0;
-
-        setOptimizationInfo({
-          original: formatFileSize(totalOriginal),
-          compressed: formatFileSize(totalCompressed),
-          savings: `${overallSavings}% (${uploadedUrls.length} صور تم ضغطها)`
-        });
-
-        // Set the first as the primary image
         onChange(uploadedUrls[0]);
-
-        // Provide all uploaded URLs to callback
         if (onMultipleChange) {
           onMultipleChange(uploadedUrls);
         }
+        setSuccessNotice(true);
+        setTimeout(() => setSuccessNotice(false), 3000);
       }
     } catch (err: any) {
-      setError(err?.message || 'تعذر معالجة أو رفع الصور، يرجى المحاولة مرة أخرى');
+      setError(err?.message || 'فشل في رفع الصورة، يرجى المحاولة مرة أخرى.');
     } finally {
       setUploading(false);
       setUploadProgressText('');
@@ -166,6 +138,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     }
   };
 
+  const handleRemoveImage = () => {
+    onChange('');
+    if (onMultipleChange) {
+      onMultipleChange([]);
+    }
+    setError('');
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -175,7 +155,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         {aspectHint && <span className="text-[10px] text-slate-400">{aspectHint}</span>}
       </div>
 
-      {/* Visual Drop Area & Preview */}
+      {/* Main Upload / Card Container */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -193,10 +173,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           {/* Current Preview or Icon */}
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 shadow-inner relative group">
             {uploading ? (
-              <div className="absolute inset-0 bg-[#0B192C]/85 backdrop-blur-xs flex flex-col items-center justify-center text-white z-10 p-2 text-center">
+              <div className="absolute inset-0 bg-[#0B192C]/90 backdrop-blur-xs flex flex-col items-center justify-center text-white z-10 p-2 text-center">
                 <Loader2 className="w-7 h-7 animate-spin text-[#C87D55] mb-1.5" />
                 <span className="text-[10px] font-bold text-amber-300 leading-tight">جاري الرفع...</span>
-                <span className="text-[8px] text-slate-300 mt-0.5">يرجى الانتظار</span>
+                <span className="text-[8px] text-slate-300 mt-0.5">سحابة ImgBB</span>
               </div>
             ) : value ? (
               <>
@@ -208,9 +188,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                     (e.target as HTMLImageElement).src = '/logo-icon.png';
                   }}
                 />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold pointer-events-none">
-                  معاينة مباشرة
-                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  title="حذف الصورة"
+                  className="absolute top-1 end-1 w-6 h-6 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </>
             ) : (
               <div className="flex flex-col items-center justify-center text-slate-400 p-2 text-center">
@@ -220,69 +205,136 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             )}
           </div>
 
-          {/* Action area: Upload button & URL input */}
+          {/* Action Buttons & Clean Controls */}
           <div className="flex-1 w-full space-y-2 text-xs">
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 disabled={uploading}
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 rounded-xl bg-[#0B192C] hover:bg-[#1E3E62] disabled:bg-slate-400 text-white font-bold transition flex items-center gap-2 shadow"
+                className="px-4 py-2.5 rounded-xl bg-[#0B192C] hover:bg-[#1E3E62] disabled:bg-slate-400 text-white font-bold transition flex items-center gap-2 shadow"
               >
                 {uploading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-[#C87D55]" />
-                    <span>{uploadProgressText || 'جاري معالجة ورفع الصورة...'}</span>
+                    <span>{uploadProgressText || 'جاري الرفع إلى السحابة...'}</span>
+                  </>
+                ) : value ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 text-[#C87D55]" />
+                    <span>إستبدال الصورة 🔄</span>
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4 text-[#C87D55]" />
                     <span>
-                      {buttonText || (multiple ? 'اختر صوراً من جهازك / الاستوديو (تحديد متعدد)' : 'اختر صورة من جهازك / الاستوديو')}
+                      {buttonText || (multiple ? 'رفع صور من الاستوديو (ImgBB)' : 'رفع صورة من الاستوديو (ImgBB)')}
                     </span>
                   </>
                 )}
               </button>
 
+              {value && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  disabled={uploading}
+                  className="px-3 py-2.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold transition flex items-center gap-1.5"
+                  title="حذف هذه الصورة نهائياً"
+                >
+                  <Trash2 className="w-4 h-4 text-rose-500" />
+                  <span>حذف الصورة</span>
+                </button>
+              )}
+
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 font-medium transition flex items-center gap-1.5"
+                onClick={() => setShowPresets(!showPresets)}
+                className="px-3 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium transition flex items-center gap-1.5"
+                title="مكتبة الصور الهندسية الجاهزة"
               >
-                <FolderOpen className="w-3.5 h-3.5 text-slate-400" />
-                <span>أو اسحبها هنا</span>
+                <Layers className="w-3.5 h-3.5 text-[#C87D55]" />
+                <span>الصور الجاهزة 🖼️</span>
               </button>
 
               <input
                 ref={fileInputRef}
                 type="file"
                 multiple={multiple}
-                accept="image/*,.svg,.webp,.png,.jpg,.jpeg"
+                accept="image/*"
                 className="hidden"
                 onChange={handleInputChange}
               />
             </div>
 
-            {optimizationInfo && (
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-semibold border border-emerald-200">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span>تم الضغط بنجاح: تم تقليص الحجم من {optimizationInfo.original} إلى {optimizationInfo.compressed} (توفير {optimizationInfo.savings})</span>
+            {/* Quick URL preview / input */}
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="text"
+                value={value || ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="رابط الصورة المباشر (HTTPS)..."
+                className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#C87D55] font-mono text-[11px] text-slate-700"
+              />
+              {value && (
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 font-bold shrink-0 flex items-center gap-1">
+                  <Check className="w-3 h-3 text-emerald-600" />
+                  رابط سحابي دائم
+                </span>
+              )}
+            </div>
+
+            {successNotice && (
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span>تم رفع الصورة إلى السحابة وحفظ الرابط بنجاح!</span>
               </div>
             )}
-
-            <p className="text-[11px] text-slate-500">
-              أو قم بلصق رابط صورة مباشر إن وجد:
-            </p>
-
-            <input
-              type="text"
-              value={value || ''}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder={placeholder}
-              className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#C87D55] font-mono text-[11px] text-slate-800"
-            />
           </div>
         </div>
+
+        {/* Preset Selector Dropdown / Grid */}
+        {showPresets && (
+          <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800">
+                مكتبة صور المعدات والأنظمة الهندسية (روابط سريعة ومباشرة):
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowPresets(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+              {PRESET_ASSETS.map((preset, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    onChange(preset.url);
+                    setShowPresets(false);
+                  }}
+                  className={`group relative rounded-xl border p-1 bg-white cursor-pointer hover:border-[#C87D55] hover:shadow-md transition text-center ${
+                    value === preset.url ? 'border-2 border-[#C87D55] ring-2 ring-[#C87D55]/20' : 'border-slate-200'
+                  }`}
+                >
+                  <div className="h-16 rounded-lg bg-slate-100 overflow-hidden mb-1">
+                    <img src={preset.url} alt={preset.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-700 block truncate" title={preset.name}>
+                    {preset.name}
+                  </span>
+                  <span className="text-[9px] text-[#C87D55] block">
+                    {preset.cat}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mt-3 p-2.5 rounded-xl bg-rose-50 text-rose-700 text-xs flex items-center gap-2 border border-rose-200">

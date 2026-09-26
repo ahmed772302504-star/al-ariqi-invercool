@@ -28,7 +28,7 @@ import {
 import { ImageUploader } from '../../components/common/ImageUploader.js';
 import { VideoUploader } from '../../components/common/VideoUploader.js';
 import { Lightbox } from '../../components/common/Lightbox.js';
-import { compressImage } from '../../utils/imageOptimizer.js';
+import { uploadToImgBB } from '../../utils/cloudImageUploader.js';
 
 const YEMEN_CITIES = [
   'صنعاء',
@@ -201,22 +201,14 @@ export const AdminGalleryTab: React.FC = () => {
       const newUrls: string[] = [];
 
       for (let i = 0; i < files.length; i++) {
-        setExtraUploadProgress(`جاري ضغط ورفع الصورة (${i + 1} من ${files.length})...`);
+        setExtraUploadProgress(`جاري رفع الصورة (${i + 1} من ${files.length}) إلى سحابة ImgBB...`);
         const file = files[i];
 
-        if (!file.type.startsWith('image/') && !file.name.match(/\.(jpg|jpeg|png|webp|svg|gif|avif)$/i)) {
+        if (file.name && file.name.match(/\.(pdf|doc|docx|zip|rar|exe|apk)$/i)) {
           continue;
         }
 
-        const { dataUrl } = await compressImage(file, {
-          maxWidth: 1600,
-          maxHeight: 1600,
-          quality: 0.82,
-          format: 'image/webp'
-        });
-
-        const filename = file.name.replace(/\.[^/.]+$/, '') + '.webp';
-        const res = await api.uploadMedia(dataUrl, filename);
+        const res = await uploadToImgBB(file, file.name);
         newUrls.push(res.url);
       }
 

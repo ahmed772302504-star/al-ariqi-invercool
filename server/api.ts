@@ -1148,13 +1148,9 @@ apiRouter.delete('/faq/:id', requireAdmin, (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
-// Media Upload Endpoint (handles images and direct video files cleanly and persists them to disk)
-apiRouter.post('/upload', (req: Request, res: Response) => {
+// Media Upload Endpoint (handles ImgBB cloud proxy and direct file uploads permanently)
+apiRouter.post('/upload', async (req: Request, res: Response) => {
   const { data, filename } = req.body;
-  if (!data) {
-    res.status(400).json({ error: 'No media data provided' });
-    return;
-  }
 
   // 1. If it's already an external URL or static path
   if (
@@ -1172,34 +1168,59 @@ apiRouter.post('/upload', (req: Request, res: Response) => {
     return;
   }
 
-  // 2. Base64 data URI handling -> write permanently to /public/uploads/
+  // 2. Base64 or direct binary buffer: Try uploading to ImgBB first for real cloud URL
+  const IMGBB_KEY = '6d207e02198a847aa98d0a2a901485a5';
+
   if (typeof data === 'string' && (data.startsWith('data:') || data.length > 50)) {
     try {
-      let mimeType = 'image/webp';
-      let base64Content = data;
-
+      let base64Clean = data;
       if (data.startsWith('data:')) {
-        const matches = data.match(/^data:([A-Za-z-+\/0-9]+);base64,(.+)$/s);
-        if (matches && matches.length === 3) {
-          mimeType = matches[1];
-          base64Content = matches[2];
-        } else {
-          const commaIdx = data.indexOf(',');
-          if (commaIdx !== -1) {
-            base64Content = data.substring(commaIdx + 1);
-          }
+        const commaIdx = data.indexOf(',');
+        if (commaIdx !== -1) {
+          base64Clean = data.substring(commaIdx + 1);
         }
       }
 
-      const buffer = Buffer.from(base64Content, 'base64');
+      // Try ImgBB Cloud API
+      try {
+        const params = new URLSearchParams();
+        params.append('image', base64Clean);
+        if (filename) params.append('name', filename.replace(/\.[^/.]+$/, ''));
 
+        const imgbbResp = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+          method: 'POST',
+          body: params
+        });
+
+        if (imgbbResp.ok) {
+          const imgbbJson = await imgbbResp.json();
+          if (imgbbJson && imgbbJson.success && imgbbJson.data?.url) {
+            res.json({
+              success: true,
+              url: imgbbJson.data.url,
+              filename: filename || 'cloud_image'
+            });
+            return;
+          }
+        }
+      } catch (cloudErr) {
+        console.warn('ImgBB proxy upload failed, falling back to disk:', cloudErr);
+      }
+
+      // Fallback: write to /public/uploads/ on disk
+      let mimeType = 'image/webp';
+      if (data.startsWith('data:')) {
+        const matches = data.match(/^data:([A-Za-z-+\/0-9]+);base64,/);
+        if (matches) mimeType = matches[1];
+      }
+
+      const buffer = Buffer.from(base64Clean, 'base64');
       let ext = '.webp';
       if (mimeType.includes('png')) ext = '.png';
       else if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = '.jpg';
       else if (mimeType.includes('svg')) ext = '.svg';
       else if (mimeType.includes('gif')) ext = '.gif';
       else if (mimeType.includes('mp4')) ext = '.mp4';
-      else if (mimeType.includes('webm')) ext = '.webm';
       else if (filename && path.extname(filename)) ext = path.extname(filename);
 
       const safeBase = filename
@@ -1223,16 +1244,9 @@ apiRouter.post('/upload', (req: Request, res: Response) => {
       });
       return;
     } catch (err: any) {
-      console.error('Failed to write uploaded media file to disk:', err);
-      // Fallback gracefully to data url if disk write failed
-      res.json({
-        success: true,
-        url: data,
-        filename: filename || 'uploaded_image.webp'
-      });
-      return;
+      console.error('Failed to write uploaded media file:', err);
     }
   }
 
-  res.status(400).json({ error: 'صيغة الملف غير مدعومة. الصيغ المسموحة: JPG, PNG, WEBP, SVG, MP4, WebM, MOV' });
+  res.status(400).json({ error: 'صيغة الملف غير مدعومة. الصيغ المسموحة: JPG, PNG, WEBP, SVG, MP4' });
 });

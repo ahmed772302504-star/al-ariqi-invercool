@@ -12,23 +12,101 @@ export interface CompressionOptions {
 }
 
 /**
- * Safely converts a File or Blob into a Base64 data URL using FileReader
+ * Safely converts a File or Blob into a Base64 data URL using FileReader,
+ * with resilient fallbacks to arrayBuffer and URL.createObjectURL for mobile stability.
  */
-export function fileToDataUrl(file: File | Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result);
-      } else {
-        reject(new Error('Failed to read file as data URL'));
+export async function fileToDataUrl(file: File | Blob): Promise<string> {
+  // Strategy 1: Standard FileReader with timeout
+  try {
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      const timeout = setTimeout(() => {
+        try {
+          reader.abort();
+        } catch {}
+        reject(new Error('FileReader timeout'));
+      }, 4000);
+
+      reader.onload = () => {
+        clearTimeout(timeout);
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Invalid reader result'));
+        }
+      };
+      reader.onerror = () => {
+        clearTimeout(timeout);
+        reject(reader.error || new Error('FileReader error'));
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (dataUrl && dataUrl.startsWith('data:')) {
+      return dataUrl;
+    }
+  } catch (err) {
+    // Fall through to Strategy 2
+  }
+
+  // Strategy 2: arrayBuffer() conversion (handles mobile memory and permission quirks)
+  if (typeof file.arrayBuffer === 'function') {
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      if (bytes.length > 0) {
+        let binary = '';
+        const len = bytes.byteLength;
+        const chunkSize = 0x8000; // 32KB chunks to prevent call stack overflow
+        for (let i = 0; i < len; i += chunkSize) {
+          binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)));
+        }
+        const base64 = btoa(binary);
+        const mime = file.type || 'image/jpeg';
+        return `data:${mime};base64,${base64}`;
       }
-    };
-    reader.onerror = () => {
-      reject(reader.error || new Error('FileReader error occurred'));
-    };
-    reader.readAsDataURL(file);
-  });
+    } catch (err) {
+      // Fall through to Strategy 3
+    }
+  }
+
+  // Strategy 3: URL.createObjectURL + Canvas rasterization
+  if (typeof window !== 'undefined' && typeof window.URL?.createObjectURL === 'function') {
+    try {
+      const objectUrl = window.URL.createObjectURL(file);
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || 800;
+            canvas.height = img.naturalHeight || 600;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0);
+              const res = canvas.toDataURL('image/jpeg', 0.82);
+              window.URL.revokeObjectURL(objectUrl);
+              resolve(res);
+              return;
+            }
+          } catch {}
+          window.URL.revokeObjectURL(objectUrl);
+          reject(new Error('Canvas export failed'));
+        };
+        img.onerror = () => {
+          window.URL.revokeObjectURL(objectUrl);
+          reject(new Error('Object URL image load failed'));
+        };
+        img.src = objectUrl;
+      });
+      return dataUrl;
+    } catch (err) {
+      // Fall through
+    }
+  }
+
+  throw new Error('تعذر قراءة ملف الصورة، يرجى المحاولة بصيغة JPG أو PNG أخرى');
 }
 
 /**
@@ -40,9 +118,9 @@ export async function compressImage(
   options: CompressionOptions = {}
 ): Promise<{ dataUrl: string; sizeBytes: number; originalSizeBytes?: number }> {
   const {
-    maxWidth = 1600,
-    maxHeight = 1600,
-    quality = 0.82,
+    maxWidth = 1200,
+    maxHeight = 1200,
+    quality = 0.78,
     format = 'image/webp'
   } = options;
 
@@ -55,11 +133,11 @@ export async function compressImage(
       originalSizeBytes = Math.round((fileOrBase64.length * 3) / 4);
     } else {
       originalSizeBytes = fileOrBase64.size;
-      // Use FileReader which works reliably across all browser iframes and CSP configurations
+      // Use resilient fileToDataUrl with multi-strategy fallbacks
       rawDataUrl = await fileToDataUrl(fileOrBase64);
     }
-  } catch {
-    // If FileReader failed or input is corrupted, return safe fallback if string
+  } catch (err: any) {
+    // If input is already string or has fallback, return safe fallback
     if (typeof fileOrBase64 === 'string') {
       return {
         dataUrl: fileOrBase64,
@@ -67,7 +145,7 @@ export async function compressImage(
         originalSizeBytes
       };
     }
-    throw new Error('فشل في قراءة ملف الصورة من جهازك');
+    throw new Error(err?.message || 'فشل في قراءة ملف الصورة، يرجى المحاولة بصورة أخرى أو رابط مباشر');
   }
 
   // 1. Vector graphics (SVG) should NOT be rasterized onto canvas
