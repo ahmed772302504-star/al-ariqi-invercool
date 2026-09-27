@@ -8,6 +8,13 @@
  * - Backup and restore operations
  */
 
+import { staticServices } from '../data/staticServices.js';
+import { staticProducts } from '../data/staticProducts.js';
+import { staticProjects } from '../data/staticProjects.js';
+import { staticReviews } from '../data/staticReviews.js';
+import { staticGallery } from '../data/staticGallery.js';
+import { staticSettings } from '../data/staticSettings.js';
+
 export const DEFAULT_ADMIN_USERNAME = 'Ahmed';
 export const DEFAULT_ADMIN_PASSWORD_RAW = '772302504A$';
 export const DEFAULT_ADMIN_PASSWORD_HASH = '1065f2841a9acf5165c22554ce16734ee2825e20e268edd9892365d24bb49758';
@@ -285,23 +292,23 @@ export interface SiteBackupBundle {
 }
 
 export function generateBackupBundle(): SiteBackupBundle {
-  const settings = localStorage.getItem('invercool_settings') || localStorage.getItem('invercool_site_settings');
-  const services = localStorage.getItem('invercool_services');
-  const products = localStorage.getItem('invercool_products');
-  const projects = localStorage.getItem('invercool_projects');
-  const gallery = localStorage.getItem('invercool_gallery');
-  const reviews = localStorage.getItem('invercool_reviews');
+  const settingsRaw = localStorage.getItem('invercool_settings') || localStorage.getItem('invercool_site_settings');
+  const servicesRaw = localStorage.getItem('invercool_services');
+  const productsRaw = localStorage.getItem('invercool_products');
+  const projectsRaw = localStorage.getItem('invercool_projects');
+  const galleryRaw = localStorage.getItem('invercool_gallery');
+  const reviewsRaw = localStorage.getItem('invercool_reviews');
 
   return {
     version: '2026.1',
     exportedAt: new Date().toISOString(),
     appName: 'AL-ARRIQI INVERCOOL',
-    settings: settings ? JSON.parse(settings) : undefined,
-    services: services ? JSON.parse(services) : undefined,
-    products: products ? JSON.parse(products) : undefined,
-    projects: projects ? JSON.parse(projects) : undefined,
-    gallery: gallery ? JSON.parse(gallery) : undefined,
-    reviews: reviews ? JSON.parse(reviews) : undefined,
+    settings: settingsRaw ? JSON.parse(settingsRaw) : staticSettings,
+    services: servicesRaw ? JSON.parse(servicesRaw) : staticServices,
+    products: productsRaw ? JSON.parse(productsRaw) : staticProducts,
+    projects: projectsRaw ? JSON.parse(projectsRaw) : staticProjects,
+    gallery: galleryRaw ? JSON.parse(galleryRaw) : staticGallery,
+    reviews: reviewsRaw ? JSON.parse(reviewsRaw) : staticReviews,
     activityLogs: getActivityLogs()
   };
 }
@@ -359,6 +366,10 @@ export async function restoreBackupFile(file: File): Promise<{ success: boolean;
     if (bundle.activityLogs && Array.isArray(bundle.activityLogs)) {
       localStorage.setItem(STORAGE_KEY_ACTIVITY_LOGS, JSON.stringify(bundle.activityLogs.slice(0, 10)));
     }
+
+    try {
+      window.dispatchEvent(new Event('invercool_settings_updated'));
+    } catch {}
 
     logActivity({
       actionAr: 'استعادة ناجحة لبيانات الموقع من ملف نسخة احتياطية',

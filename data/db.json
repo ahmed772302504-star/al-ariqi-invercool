@@ -1441,9 +1441,9 @@
   "adminUsers": [
     {
       "id": "admin-1",
-      "username": "admin",
-      "passwordHash": "84680e187e3ee771fca18e0df0f4fb6d027f488b0e5112a1b35f231edd130f11a6ce5669dc806f4f43b76232bd2113c948bbe8eb780dad2414daf73c8b2cf754",
-      "salt": "a41dd4c3c4e5493053317f6a384f8d49",
+      "username": "Ahmed",
+      "passwordHash": "aeff314444b59e28c2822531182a2a375402b11fd12413e7a38fbc0c0508280ed36fbebb09b1cb3a9d993238c3f4ba9c80a22f4bd810188488d37955e0423ea3",
+      "salt": "a1c967c7ac9c0eb566aee4fdb9dec69b",
       "role": "super_admin",
       "createdAt": "2026-09-23T12:03:24.463Z"
     }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context';
 import { Product } from '../types';
+import { useModalHistory } from '../utils/useModalHistory.js';
 import {
   ShoppingBag,
   Zap,
@@ -33,6 +34,8 @@ export const ProductsView: React.FC<ProductsProps> = ({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCondition, setSelectedCondition] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  useModalHistory(Boolean(selectedProduct), () => setSelectedProduct(null), 'productDetailModal');
 
   const categories = [
     { id: 'all', labelAr: 'الكل', labelEn: 'All' },

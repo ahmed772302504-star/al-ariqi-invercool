@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context';
 import { Service } from '../types';
+import { useModalHistory } from '../utils/useModalHistory.js';
 import {
   Wrench,
   Snowflake,
@@ -29,6 +30,8 @@ export const ServicesView: React.FC<ServicesProps> = ({
 }) => {
   const { lang, t, services } = useApp();
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+
+  useModalHistory(Boolean(selectedService), () => setSelectedService(null), 'serviceDetailModal');
 
   const getIcon = (name: string) => {
     switch (name) {

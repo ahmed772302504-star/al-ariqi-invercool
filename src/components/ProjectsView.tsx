@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context';
 import { Project } from '../types';
+import { useModalHistory } from '../utils/useModalHistory.js';
 import {
   Briefcase,
   MapPin,
@@ -25,6 +26,8 @@ export const ProjectsView: React.FC<ProjectsProps> = ({ openQuoteModal }) => {
   const [selectedGov, setSelectedGov] = useState('all');
   const [selectedClientType, setSelectedClientType] = useState('all');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  useModalHistory(Boolean(selectedProject), () => setSelectedProject(null), 'projectDetailModal');
 
   const filtered = projects.filter((p) => {
     if (selectedGov !== 'all' && p.governate !== selectedGov) return false;
