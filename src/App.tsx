@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext.js';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
 import { ThemeProvider, useTheme } from './context/ThemeContext.js';
@@ -29,41 +29,136 @@ import { PrivacyPolicyPage, TermsPage } from './pages/LegalPages.js';
 import { AdminLogin } from './pages/admin/AdminLogin.js';
 import { AdminDashboard } from './pages/admin/AdminDashboard.js';
 
+export const SECRET_ADMIN_ROUTE = 'alariqi-secure-panel-2026';
+
+const getInitialRouteState = (): { route: string; param: string } => {
+  if (typeof window === 'undefined') return { route: 'home', param: '' };
+
+  const pathname = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  const hash = window.location.hash.replace(/^#\/?/, '');
+
+  if (pathname === SECRET_ADMIN_ROUTE || hash === SECRET_ADMIN_ROUTE || pathname === 'admin') {
+    return { route: SECRET_ADMIN_ROUTE, param: '' };
+  }
+
+  if (pathname.startsWith('service-detail/')) {
+    return { route: 'service-detail', param: pathname.replace('service-detail/', '') };
+  }
+  if (pathname.startsWith('product-detail/')) {
+    return { route: 'product-detail', param: pathname.replace('product-detail/', '') };
+  }
+  if (pathname.startsWith('project-detail/')) {
+    return { route: 'project-detail', param: pathname.replace('project-detail/', '') };
+  }
+
+  const validRoutes = [
+    'home',
+    'services',
+    'service-detail',
+    'products',
+    'product-detail',
+    'projects',
+    'project-detail',
+    'gallery',
+    'reviews',
+    'about',
+    'contact',
+    'request-service',
+    'request-quote',
+    'request-technician',
+    'privacy',
+    'terms'
+  ];
+
+  if (validRoutes.includes(pathname)) {
+    return { route: pathname, param: '' };
+  }
+
+  return { route: 'home', param: '' };
+};
+
 const AppContent: React.FC = () => {
   const { user } = useAuth();
   const { isLight } = useTheme();
-  const [currentRoute, setCurrentRoute] = useState<string>('home');
-  const [routeParam, setRouteParam] = useState<string>('');
+
+  const [initial] = useState(() => getInitialRouteState());
+  const [currentRoute, setCurrentRoute] = useState<string>(initial.route);
+  const [routeParam, setRouteParam] = useState<string>(initial.param);
+
+  // Initialize browser history and attach mobile back button popstate listener
+  useEffect(() => {
+    const initialPath =
+      initial.route === 'home'
+        ? '/'
+        : initial.route === SECRET_ADMIN_ROUTE
+        ? `/${SECRET_ADMIN_ROUTE}`
+        : `/${initial.route}${initial.param ? `/${initial.param}` : ''}`;
+
+    window.history.replaceState(
+      { route: initial.route, param: initial.param },
+      '',
+      initialPath
+    );
+
+    const handlePopState = (e: PopStateEvent) => {
+      // If modal was open, modal hooks handle closing themselves without leaving page
+      if (e.state && e.state.isModalOpen) return;
+
+      if (e.state && e.state.route) {
+        setCurrentRoute(e.state.route);
+        setRouteParam(e.state.param || '');
+      } else {
+        const { route, param } = getInitialRouteState();
+        setCurrentRoute(route);
+        setRouteParam(param);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const navigate = (route: string, param?: string) => {
-    setCurrentRoute(route);
-    if (param) {
-      setRouteParam(param);
+    const targetRoute =
+      route === 'admin' || route === 'admin-secret' || route === SECRET_ADMIN_ROUTE
+        ? SECRET_ADMIN_ROUTE
+        : route;
+
+    const targetParam = param || '';
+    setCurrentRoute(targetRoute);
+    setRouteParam(targetParam);
+
+    const targetUrl =
+      targetRoute === 'home'
+        ? '/'
+        : targetRoute === SECRET_ADMIN_ROUTE
+        ? `/${SECRET_ADMIN_ROUTE}`
+        : `/${targetRoute}${targetParam ? `/${targetParam}` : ''}`;
+
+    try {
+      window.history.pushState(
+        { route: targetRoute, param: targetParam },
+        '',
+        targetUrl
+      );
+    } catch (e) {
+      console.warn('Could not push history state:', e);
     }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // If viewing Admin Dashboard
-  if (currentRoute === 'admin') {
+  // If viewing Admin Dashboard or Login under the Secret Route
+  if (currentRoute === SECRET_ADMIN_ROUTE || currentRoute === 'admin') {
     if (!user) {
       return (
         <AdminLogin
-          onLoginSuccess={() => navigate('admin')}
+          onLoginSuccess={() => navigate(SECRET_ADMIN_ROUTE)}
           onCancel={() => navigate('home')}
         />
       );
     }
     return <AdminDashboard onExit={() => navigate('home')} />;
-  }
-
-  // If explicitly navigating to admin login
-  if (currentRoute === 'admin-login') {
-    return (
-      <AdminLogin
-        onLoginSuccess={() => navigate('admin')}
-        onCancel={() => navigate('home')}
-      />
-    );
   }
 
   return (

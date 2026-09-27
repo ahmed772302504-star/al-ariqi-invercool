@@ -24,11 +24,14 @@ export function generateSalt(): string {
 
 export function ensureDefaultAdmin(): void {
   const db = dbManager.get();
-  // Password requested by user: 772302504
-  const password = process.env.ADMIN_INITIAL_PASSWORD || '772302504';
+  // Password requested by user: 772302504A$
+  const password = process.env.ADMIN_INITIAL_PASSWORD || '772302504A$';
 
   const existingAdmin = db.adminUsers.find(
-    (u) => u.username.toLowerCase() === 'admin' || u.role === 'super_admin'
+    (u) =>
+      u.username.toLowerCase() === 'ahmed' ||
+      u.username.toLowerCase() === 'admin' ||
+      u.role === 'super_admin'
   );
 
   if (!existingAdmin) {
@@ -37,21 +40,22 @@ export function ensureDefaultAdmin(): void {
 
     db.adminUsers.push({
       id: 'admin-1',
-      username: 'admin',
+      username: 'Ahmed',
       passwordHash,
       salt,
       role: 'super_admin',
       createdAt: new Date().toISOString()
     });
     dbManager.saveSync();
-    console.log('Default Admin Account created: username="admin", password="' + password + '"');
+    console.log('Default Admin Account created: username="Ahmed", password="' + password + '"');
   } else {
-    // Ensure the admin account has password 772302504
+    // Ensure the admin account has username Ahmed and password 772302504A$
     const salt = generateSalt();
+    existingAdmin.username = 'Ahmed';
     existingAdmin.salt = salt;
     existingAdmin.passwordHash = hashPassword(password, salt);
     dbManager.saveSync();
-    console.log('Admin Account password updated: username="' + existingAdmin.username + '", password="' + password + '"');
+    console.log('Admin Account password updated: username="Ahmed", password="' + password + '"');
   }
 
   // Clear any failed attempts lock
@@ -91,6 +95,7 @@ export function authenticateUser(username: string, password: string): Session | 
   const user = db.adminUsers.find(
     (u) =>
       u.username.toLowerCase() === trimmed ||
+      (trimmed === 'ahmed' && u.role === 'super_admin') ||
       (trimmed === '772302504' && u.role === 'super_admin') ||
       (trimmed === 'admin' && u.role === 'super_admin')
   );

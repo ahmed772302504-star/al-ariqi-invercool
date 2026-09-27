@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
+import { useModalHistory } from '../../utils/useModalHistory.js';
 import {
   Phone,
   MessageCircle,
@@ -58,6 +59,9 @@ export const FloatingContact: React.FC<FloatingContactProps> = ({ navigate }) =>
   // Menu state
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [selectedType, setSelectedType] = useState<WhatsAppServiceType>('quote');
+
+  // Mobile back button support for floating contact drawer
+  useModalHistory(isMenuOpen, () => setIsMenuOpen(false), 'floatingContactMenu');
   const [msgLang, setMsgLang] = useState<'ar' | 'en'>(language === 'en' ? 'en' : 'ar');
   const [showCustomizer, setShowCustomizer] = useState<boolean>(false);
 

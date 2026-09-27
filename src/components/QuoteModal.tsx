@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context';
 import { X, Sparkles, CheckCircle2, AlertCircle, Upload, Building, Phone, MapPin, User, FileText } from 'lucide-react';
+import { useModalHistory } from '../utils/useModalHistory.js';
 
 interface QuoteModalProps {
   isOpen: boolean;
@@ -9,6 +10,9 @@ interface QuoteModalProps {
 
 export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose }) => {
   const { lang, t, governates, submitQuote } = useApp();
+
+  // Mobile back button support
+  useModalHistory(isOpen, onClose, 'quoteModal');
 
   const [loading, setLoading] = useState(false);
   const [successData, setSuccessData] = useState<{ requestNumber?: string; message?: string } | null>(null);
