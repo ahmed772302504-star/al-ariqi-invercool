@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { ThemeToggle } from '../common/ThemeToggle.js';
 import { PWAInstallButton } from '../common/PWAInstallButton.js';
+import { useModalHistory } from '../../utils/useModalHistory.js';
 import {
   Phone,
   MessageCircle,
@@ -31,6 +32,27 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, navigate }) => {
   const { settings, logoIconUrl } = useSettings();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [requestsDropdownOpen, setRequestsDropdownOpen] = useState(false);
+
+  // Mobile back button support for mobile menu drawer
+  useModalHistory(mobileMenuOpen, () => setMobileMenuOpen(false), 'headerMobileMenu');
+
+  // Secret Trigger: 5 rapid clicks/taps within 2 seconds exclusively on logo
+  const logoClicksRef = useRef<number[]>([]);
+
+  const handleLogoClick = () => {
+    const now = Date.now();
+    const recent = [...logoClicksRef.current.filter((time) => now - time <= 2000), now];
+    logoClicksRef.current = recent;
+
+    if (recent.length >= 5) {
+      logoClicksRef.current = [];
+      navigate('alariqi-secure-panel-2026');
+      return;
+    }
+
+    // Normal click action
+    handleNav('home');
+  };
 
   const navLinks = [
     { route: 'home', labelAr: 'الرئيسية', labelEn: 'Home' },
@@ -125,18 +147,6 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, navigate }) => {
 
             {/* In-App PWA Install Button for Offline Readiness */}
             <PWAInstallButton variant="navbar" className="hidden sm:inline-flex" />
-
-            {/* Admin Dashboard shortcut - only visible to authenticated admin user */}
-            {user && (
-              <button
-                onClick={() => handleNav('admin')}
-                id="header-admin-btn"
-                className="flex items-center gap-1 text-xs text-amber-300 hover:text-amber-200 bg-amber-950/40 px-2.5 py-0.5 rounded border border-amber-800"
-              >
-                <Lock className="w-3 h-3" />
-                <span>{t('لوحة التحكم', 'Admin')}</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -144,11 +154,12 @@ export const Header: React.FC<HeaderProps> = ({ currentRoute, navigate }) => {
       {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Brand Logo & Name */}
+          {/* Brand Logo & Name with 5 rapid clicks secret trigger */}
           <div
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => handleNav('home')}
+            className="flex items-center gap-3 cursor-pointer group select-none"
+            onClick={handleLogoClick}
             id="brand-header-link"
+            title={t('العريقي إنفركول', 'AL-ARRIQI INVERCOOL')}
           >
             <div
               className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl border-2 border-[#C87D55] flex items-center justify-center p-1 shadow-xl group-hover:scale-105 transition-transform overflow-hidden ${

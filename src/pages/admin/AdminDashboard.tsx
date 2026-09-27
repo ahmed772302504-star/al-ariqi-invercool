@@ -11,6 +11,7 @@ import { AdminReviewsTab } from './AdminReviewsTab.js';
 import { AdminGalleryTab } from './AdminGalleryTab.js';
 import { AdminSettingsTab } from './AdminSettingsTab.js';
 import { AdminSiteImagesTab } from './AdminSiteImagesTab.js';
+import { AdminSecurityTab } from './AdminSecurityTab.js';
 import {
   LayoutDashboard,
   Wrench,
@@ -24,6 +25,7 @@ import {
   LogOut,
   ExternalLink,
   ShieldCheck,
+  Eye,
   Menu,
   X
 } from 'lucide-react';
@@ -48,6 +50,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit }) => {
     { id: 'reviews', labelAr: 'مراجعة التقييمات', labelEn: 'Reviews Moderation', icon: Star },
     { id: 'gallery', labelAr: 'معارض الأعمال السابقة للأقسام', labelEn: 'Section Galleries & Works', icon: Image },
     { id: 'site-images', labelAr: 'صور وهوية الموقع (المالك)', labelEn: 'Site Images & Logo', icon: Images },
+    { id: 'security', labelAr: 'الأمان والنسخ الاحتياطي', labelEn: 'Security & Backup', icon: ShieldCheck },
     { id: 'settings', labelAr: 'إعدادات الشركة وقنوات الاتصال', labelEn: 'Settings & Contact', icon: Settings },
   ];
 
@@ -91,13 +94,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Quick Live Preview Button */}
           <button
             onClick={onExit}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E3E62] hover:bg-[#2A5280] text-xs font-bold transition text-slate-200"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-xs font-bold transition text-white shadow-md hover:shadow-lg"
+            title={t('المعاينة السريعة للموقع المباشر', 'Quick Live Preview')}
           >
-            <ExternalLink className="w-3.5 h-3.5 text-[#C87D55]" />
-            <span>{t('عرض الموقع الرئيسي', 'View Live Site')}</span>
+            <Eye className="w-3.5 h-3.5" />
+            <span className="inline">{t('المعاينة السريعة', 'Live Preview')}</span>
           </button>
 
           <button
@@ -165,6 +170,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit }) => {
           {activeTab === 'reviews' && <AdminReviewsTab />}
           {activeTab === 'gallery' && <AdminGalleryTab />}
           {activeTab === 'site-images' && <AdminSiteImagesTab />}
+          {activeTab === 'security' && <AdminSecurityTab />}
           {activeTab === 'settings' && <AdminSettingsTab />}
         </main>
       </div>

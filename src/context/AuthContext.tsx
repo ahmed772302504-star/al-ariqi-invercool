@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { logActivity, INACTIVITY_TIMEOUT_MS } from '../utils/security.js';
 
 export interface AdminUser {
   id: string;
@@ -27,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
   const [isLoading, setIsLoading] = useState(true);
+  const lastActivityRef = useRef<number>(Date.now());
 
   useEffect(() => {
     // If we have a local session or backend is offline, preserve the user without logging them out
@@ -75,9 +77,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [token]);
 
+  // -------------------------------------------------------------
+  // Automatic Idle Logout (30 minutes of inactivity)
+  // -------------------------------------------------------------
+  useEffect(() => {
+    if (!user) return;
+
+    lastActivityRef.current = Date.now();
+
+    const handleUserInteraction = () => {
+      lastActivityRef.current = Date.now();
+    };
+
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach((ev) => window.addEventListener(ev, handleUserInteraction, { passive: true }));
+
+    // Check every 15 seconds if 30 minutes of idle elapsed
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if (now - lastActivityRef.current >= INACTIVITY_TIMEOUT_MS) {
+        logActivity({
+          actionAr: 'إنهاء الجلسة تلقائياً بسبب الخمول (30 دقيقة)',
+          actionEn: 'Session terminated automatically due to 30 min idle',
+          type: 'other',
+          details: 'تم تسجيل الخروج لحماية لوحة التحكم'
+        });
+        logout();
+      }
+    }, 15000);
+
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, handleUserInteraction));
+      clearInterval(interval);
+    };
+  }, [user]);
+
   const login = (newToken: string, newUser: AdminUser) => {
     setToken(newToken);
     setUser(newUser);
+    lastActivityRef.current = Date.now();
     localStorage.setItem('al_arriqi_admin_token', newToken);
     localStorage.setItem('al_arriqi_admin_user', JSON.stringify(newUser));
   };

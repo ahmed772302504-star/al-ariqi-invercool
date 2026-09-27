@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, MapPin, Building2, Image as ImageIcon, Video, ExternalLink } from 'lucide-react';
+import { useModalHistory } from '../../utils/useModalHistory.js';
 
 export interface LightboxProps {
   isOpen: boolean;
@@ -30,6 +31,9 @@ export const Lightbox: React.FC<LightboxProps> = ({
   caption,
   videoUrl
 }) => {
+  // Mobile system back button support
+  useModalHistory(isOpen, onClose, 'lightboxModal');
+
   useEffect(() => {
     if (!isOpen) return;
 

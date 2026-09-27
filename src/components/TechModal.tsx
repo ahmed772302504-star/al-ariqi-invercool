@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context';
 import { X, UserCheck, CheckCircle2, AlertCircle, Phone, MapPin, Clock, Wrench } from 'lucide-react';
+import { useModalHistory } from '../utils/useModalHistory.js';
 
 interface TechModalProps {
   isOpen: boolean;
@@ -9,6 +10,9 @@ interface TechModalProps {
 
 export const TechModal: React.FC<TechModalProps> = ({ isOpen, onClose }) => {
   const { lang, t, governates, submitTechnician } = useApp();
+
+  // Mobile back button support
+  useModalHistory(isOpen, onClose, 'techModal');
 
   const [loading, setLoading] = useState(false);
   const [successData, setSuccessData] = useState<{ requestNumber?: string; message?: string } | null>(null);

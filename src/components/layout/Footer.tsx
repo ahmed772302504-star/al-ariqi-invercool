@@ -292,13 +292,6 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
             >
               {t('الشروط والأحكام', 'Terms & Conditions')}
             </button>
-            <button
-              onClick={() => handleNav('admin-login')}
-              id="footer-admin-link"
-              className="text-amber-600 hover:text-amber-700 font-bold transition"
-            >
-              {t('لوحة الإدارة', 'Admin Portal')}
-            </button>
           </div>
         </div>
 
