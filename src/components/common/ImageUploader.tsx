@@ -267,27 +267,54 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               />
             </div>
 
-            {/* Quick URL preview / input */}
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                type="text"
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder="رابط الصورة المباشر (HTTPS)..."
-                className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 focus:outline-none focus:border-[#C87D55] font-mono text-[11px] text-slate-700"
-              />
-              {value && (
-                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 font-bold shrink-0 flex items-center gap-1">
-                  <Check className="w-3 h-3 text-emerald-600" />
-                  رابط سحابي دائم
+            {/* Dedicated Permanent Cloud URL (ImgBB) input */}
+            <div className="space-y-1 pt-1.5 border-t border-slate-200/80">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>رابط سحابي دائم (ImgBB / Cloud URL)</span>
                 </span>
-              )}
+                {value && (
+                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold shrink-0 flex items-center gap-1">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    {value.includes('ibb.co') ? 'رابط ImgBB معتمد' : 'رابط سحابي نشط'}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="url"
+                  value={value || ''}
+                  onChange={(e) => {
+                    const trimmed = e.target.value.trim();
+                    onChange(trimmed);
+                    if (onMultipleChange) {
+                      onMultipleChange(trimmed ? [trimmed] : []);
+                    }
+                  }}
+                  placeholder="الصق الرابط السحابي الدائم هنا (https://i.ibb.co/...)"
+                  className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-300 focus:outline-none focus:border-[#C87D55] focus:ring-1 focus:ring-[#C87D55] font-mono text-[11px] text-slate-800 placeholder:font-sans placeholder:text-slate-400 shadow-2xs"
+                />
+                {value && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    title="مسح الرابط والصورة"
+                    className="p-2 rounded-xl border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-400 transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <span className="text-[10px] text-slate-400 block">
+                عند لصق أو رفع رابط سحابي (ImgBB)، يتم اعتماده فورياً وتجاهل أي صورة قديمة.
+              </span>
             </div>
 
             {successNotice && (
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 animate-fadeIn">
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span>تم رفع الصورة إلى السحابة وحفظ الرابط بنجاح!</span>
+                <span>تم اعتماد الرابط السحابي بنجاح!</span>
               </div>
             )}
           </div>

@@ -56,6 +56,10 @@ export const AdminServicesTab: React.FC = () => {
       contentEn: '',
       category: 'أنظمة التكييف المركزي',
       icon: 'Wind',
+      iconName: 'Wind',
+      image: '',
+      imageUrl: '',
+      image_url: '',
       featuresAr: [],
       featuresEn: [],
       benefitsAr: [],
@@ -71,6 +75,7 @@ export const AdminServicesTab: React.FC = () => {
     if (window.confirm(`هل أنت متأكد من حذف الخدمة: "${title}"؟`)) {
       try {
         await api.deleteService(id);
+        setServices((prev) => prev.filter((s) => s.id !== id));
         loadServices();
       } catch (err: any) {
         alert(err.message || 'Failed to delete service');
@@ -88,12 +93,40 @@ export const AdminServicesTab: React.FC = () => {
     setSaving(true);
     setError('');
 
+    // Absolute priority to permanent cloud link (ImgBB)
+    const rawCloudLink = (
+      currentService.image_url ||
+      currentService.imageUrl ||
+      currentService.image ||
+      ''
+    ).trim();
+
+    const servicePayload: Service = {
+      ...currentService,
+      image: rawCloudLink,
+      imageUrl: rawCloudLink,
+      image_url: rawCloudLink
+    } as Service;
+
     try {
-      if (currentService.id) {
-        await api.updateService(currentService.id, currentService);
+      let savedService: Service;
+      if (servicePayload.id) {
+        savedService = await api.updateService(servicePayload.id, servicePayload);
       } else {
-        await api.createService(currentService as any);
+        savedService = await api.createService(servicePayload);
       }
+
+      // Immediate UI update
+      setServices((prev) => {
+        const index = prev.findIndex((s) => s.id === savedService.id);
+        if (index !== -1) {
+          const updated = [...prev];
+          updated[index] = savedService;
+          return updated;
+        }
+        return [savedService, ...prev];
+      });
+
       setIsEditing(false);
       loadServices();
     } catch (err: any) {
@@ -148,6 +181,7 @@ export const AdminServicesTab: React.FC = () => {
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-900 font-bold uppercase">
                 <tr>
                   <th className="py-3 px-4 text-start">#</th>
+                  <th className="py-3 px-4 text-start">الصورة</th>
                   <th className="py-3 px-4 text-start">{t('عنوان الخدمة', 'Service Title')}</th>
                   <th className="py-3 px-4 text-start">{t('القسم / التصنيف', 'Category')}</th>
                   <th className="py-3 px-4 text-center">{t('الحالة', 'Status')}</th>
@@ -158,6 +192,22 @@ export const AdminServicesTab: React.FC = () => {
                 {filtered.map((s, idx) => (
                   <tr key={s.id} className="hover:bg-slate-50/80 transition">
                     <td className="py-3 px-4 font-mono font-bold text-slate-400">{idx + 1}</td>
+                    <td className="py-2.5 px-4">
+                      {s.image_url || s.imageUrl || s.image ? (
+                        <img
+                          src={s.image_url || s.imageUrl || s.image}
+                          alt={s.titleAr}
+                          className="w-12 h-12 object-cover rounded-lg border border-slate-200 shadow-2xs"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/logo-icon.png';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-[10px]">
+                          بلا صورة
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3 px-4">
                       <strong className="text-slate-900 block">{s.titleAr}</strong>
                       <span className="text-[11px] text-slate-400">{s.titleEn}</span>
@@ -273,10 +323,18 @@ export const AdminServicesTab: React.FC = () => {
               </div>
 
               <ImageUploader
-                label="صورة الخدمة التوضيحية"
-                value={currentService.image || ''}
-                onChange={(url) => setCurrentService({ ...currentService, image: url })}
-                aspectHint="صورة للأعمال أو المعدات المتعلقة بالخدمة (يتم الضغط والتحسين التلقائي)"
+                label="صورة الخدمة التوضيحية (رابط سحابي دائم أو رفع ImgBB)"
+                value={currentService.image_url || currentService.imageUrl || currentService.image || ''}
+                onChange={(url) => {
+                  const trimmed = (url || '').trim();
+                  setCurrentService({
+                    ...currentService,
+                    image: trimmed,
+                    imageUrl: trimmed,
+                    image_url: trimmed
+                  });
+                }}
+                aspectHint="الصق رابط ImgBB المباشر (https://i.ibb.co/...) وسيتم اعتماده فورياً"
               />
 
               <div>

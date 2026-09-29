@@ -65,7 +65,9 @@ export const AdminProductsTab: React.FC = () => {
       price: 0,
       showPrice: false,
       status: 'available',
-      mainImage: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&auto=format&fit=crop',
+      mainImage: '',
+      imageUrl: '',
+      image_url: '',
       additionalImages: [],
       energyConsumption: 'Inverter Eco A+++',
       warranty: 'ضمان سنة كاملة',
@@ -80,6 +82,8 @@ export const AdminProductsTab: React.FC = () => {
     if (window.confirm(`هل أنت متأكد من حذف المنتج: "${name}"؟`)) {
       try {
         await api.deleteProduct(id);
+        // Instant UI update
+        setProducts((prev) => prev.filter((p) => p.id !== id));
         loadProducts();
       } catch (err: any) {
         alert(err.message || 'Failed to delete product');
@@ -97,12 +101,40 @@ export const AdminProductsTab: React.FC = () => {
     setSaving(true);
     setError('');
 
+    // Absolute priority to permanent cloud link (ImgBB)
+    const rawCloudLink = (
+      currentProduct.image_url ||
+      currentProduct.imageUrl ||
+      currentProduct.mainImage ||
+      ''
+    ).trim();
+
+    const productPayload: Product = {
+      ...currentProduct,
+      mainImage: rawCloudLink,
+      imageUrl: rawCloudLink,
+      image_url: rawCloudLink
+    } as Product;
+
     try {
-      if (currentProduct.id) {
-        await api.updateProduct(currentProduct.id, currentProduct);
+      let savedProduct: Product;
+      if (productPayload.id) {
+        savedProduct = await api.updateProduct(productPayload.id, productPayload);
       } else {
-        await api.createProduct(currentProduct as any);
+        savedProduct = await api.createProduct(productPayload);
       }
+
+      // Immediate UI state update with the newly saved product
+      setProducts((prev) => {
+        const index = prev.findIndex((p) => p.id === savedProduct.id);
+        if (index !== -1) {
+          const updated = [...prev];
+          updated[index] = savedProduct;
+          return updated;
+        }
+        return [savedProduct, ...prev];
+      });
+
       setIsEditing(false);
       loadProducts();
     } catch (err: any) {
@@ -196,7 +228,20 @@ export const AdminProductsTab: React.FC = () => {
                 {filtered.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/80 transition">
                     <td className="py-2.5 px-4">
-                      <img src={p.mainImage} alt={p.nameAr} className="w-12 h-12 object-cover rounded-lg border border-slate-200" />
+                      {p.image_url || p.imageUrl || p.mainImage ? (
+                        <img
+                          src={p.image_url || p.imageUrl || p.mainImage}
+                          alt={p.nameAr}
+                          className="w-12 h-12 object-cover rounded-lg border border-slate-200"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/logo-icon.png';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-[10px]">
+                          بلا صورة
+                        </div>
+                      )}
                     </td>
                     <td className="py-2.5 px-4">
                       <strong className="text-slate-900 block">{p.nameAr}</strong>
@@ -394,11 +439,19 @@ export const AdminProductsTab: React.FC = () => {
 
                 <div className="sm:col-span-2">
                   <ImageUploader
-                    label="صورة الجهاز / المنتج الرئيسية"
-                    value={currentProduct.mainImage || ''}
-                    onChange={(url) => setCurrentProduct({ ...currentProduct, mainImage: url })}
+                    label="صورة الجهاز / المنتج الرئيسية (رابط سحابي دائم أو رفع ImgBB)"
+                    value={currentProduct.image_url || currentProduct.imageUrl || currentProduct.mainImage || ''}
+                    onChange={(url) => {
+                      const trimmed = (url || '').trim();
+                      setCurrentProduct({
+                        ...currentProduct,
+                        mainImage: trimmed,
+                        imageUrl: trimmed,
+                        image_url: trimmed
+                      });
+                    }}
                     required
-                    aspectHint="اختر صورة نقية للمكيف أو القطعة"
+                    aspectHint="الصق رابط ImgBB المباشر (https://i.ibb.co/...) وسيتم حفظه فورياً في Supabase"
                   />
                 </div>
               </div>

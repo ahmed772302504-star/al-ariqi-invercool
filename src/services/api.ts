@@ -25,7 +25,9 @@ import {
   isSupabaseConfigured,
   mapRowToProduct,
   getSnakeCasePayload,
-  getCamelCasePayload
+  getCamelCasePayload,
+  safeSupabaseProductSave,
+  resolveCloudImage
 } from '../supabaseClient.js';
 
 const BASE_URL = '/api';
@@ -401,6 +403,10 @@ export const api = {
     const newSlug = product.slug || `product-${Date.now()}`;
     const createdAt = new Date().toISOString();
 
+    // Priority to cloud image (ImgBB / URL)
+    const cloudImg = resolveCloudImage(product);
+    const chosenImage = cloudImg || product.mainImage || '';
+
     const fullProduct: Product = {
       id: newId,
       slug: newSlug,
@@ -417,7 +423,9 @@ export const api = {
       status: product.status || 'available',
       price: product.price,
       showPrice: Boolean(product.showPrice),
-      mainImage: product.mainImage || '/images/products/vrf-system.jpg',
+      mainImage: chosenImage || '/images/products/vrf-system.jpg',
+      imageUrl: chosenImage,
+      image_url: chosenImage,
       additionalImages: product.additionalImages || [],
       isFeatured: Boolean(product.isFeatured),
       isImportedEconomy: Boolean(product.isImportedEconomy),
@@ -431,33 +439,14 @@ export const api = {
 
     let supabaseCreated: Product | null = null;
 
-    // 1. Direct Insert into Supabase 'products' table
+    // 1. Direct Insert into Supabase 'products' table using adaptive schema safe save
     try {
-      const snakePayload = getSnakeCasePayload(fullProduct);
-      let { data, error } = await supabase
-        .from('products')
-        .insert([snakePayload])
-        .select()
-        .single();
-
-      // Retry with camelCase payload if undefined column error (e.g. Postgres 42703)
-      if (error && (error.code === '42703' || error.message.includes('column'))) {
-        console.info('[Supabase createProduct] Retrying with camelCase payload...');
-        const camelPayload = getCamelCasePayload(fullProduct);
-        const retryRes = await supabase
-          .from('products')
-          .insert([camelPayload])
-          .select()
-          .single();
-        data = retryRes.data;
-        error = retryRes.error;
-      }
-
+      const { data, error } = await safeSupabaseProductSave('insert', fullProduct);
       if (!error && data) {
         supabaseCreated = mapRowToProduct(data);
         console.log('[Supabase createProduct] Successfully inserted product:', supabaseCreated.id);
       } else if (error) {
-        console.error('[Supabase createProduct] Insert error:', error.message, error.details);
+        console.warn('[Supabase createProduct] Insert warning:', error.message || error);
       }
     } catch (sbErr) {
       console.error('[Supabase createProduct] Exception during insert:', sbErr);
@@ -484,38 +473,23 @@ export const api = {
   updateProduct: async (id: string, product: Partial<Product>): Promise<Product> => {
     let supabaseUpdated: Product | null = null;
 
+    // Priority to cloud image
+    const cloudImg = resolveCloudImage(product);
+    const updatedPayload = { ...product };
+    if (cloudImg) {
+      updatedPayload.mainImage = cloudImg;
+      updatedPayload.imageUrl = cloudImg;
+      updatedPayload.image_url = cloudImg;
+    }
+
     // 1. Direct Update in Supabase 'products' table
     try {
-      const snakePayload = getSnakeCasePayload(product);
-      delete snakePayload.id;
-
-      let { data, error } = await supabase
-        .from('products')
-        .update(snakePayload)
-        .eq('id', id)
-        .select()
-        .single();
-
-      // Retry with camelCase payload if undefined column error
-      if (error && (error.code === '42703' || error.message.includes('column'))) {
-        console.info('[Supabase updateProduct] Retrying with camelCase payload...');
-        const camelPayload = getCamelCasePayload(product);
-        delete camelPayload.id;
-        const retryRes = await supabase
-          .from('products')
-          .update(camelPayload)
-          .eq('id', id)
-          .select()
-          .single();
-        data = retryRes.data;
-        error = retryRes.error;
-      }
-
+      const { data, error } = await safeSupabaseProductSave('update', updatedPayload, id);
       if (!error && data) {
         supabaseUpdated = mapRowToProduct(data);
         console.log('[Supabase updateProduct] Successfully updated product:', id);
       } else if (error) {
-        console.error('[Supabase updateProduct] Update error:', error.message, error.details);
+        console.warn('[Supabase updateProduct] Update warning:', error.message || error);
       }
     } catch (sbErr) {
       console.error('[Supabase updateProduct] Exception during update:', sbErr);

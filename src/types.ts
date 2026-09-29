@@ -28,6 +28,8 @@ export interface Service {
   icon?: string;
   iconName: string;
   image: string;
+  imageUrl?: string;
+  image_url?: string;
   videoUrl?: string;
   featuresAr: string[];
   featuresEn: string[];
@@ -60,6 +62,8 @@ export interface Product {
   price?: number;
   showPrice: boolean;
   mainImage: string;
+  imageUrl?: string;
+  image_url?: string;
   additionalImages: string[];
   isFeatured: boolean;
   isImportedEconomy: boolean;
