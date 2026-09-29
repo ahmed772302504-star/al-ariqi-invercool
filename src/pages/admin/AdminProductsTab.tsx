@@ -16,6 +16,7 @@ import {
   Upload
 } from 'lucide-react';
 import { ImageUploader } from '../../components/common/ImageUploader.js';
+import { isSupabaseConfigured } from '../../supabaseClient.js';
 
 export const AdminProductsTab: React.FC = () => {
   const { t } = useLanguage();
@@ -126,8 +127,14 @@ export const AdminProductsTab: React.FC = () => {
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">{t('إدارة أجهزة ومعدات التكييف والتبريد', 'Manage Equipment & Products')}</h2>
-          <p className="text-xs text-slate-500">{t('إضافة أجهزة جديدة، تحديد المستعمل النظيف، الأجهزة الاقتصادية، وتحديث الأسعار وحالة التوفر', 'Manage new & used stock, economy deals, pricing, and availability')}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900">{t('إدارة أجهزة ومعدات التكييف والتبريد', 'Manage Equipment & Products')}</h2>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>{isSupabaseConfigured() ? t('قاعدة بيانات Supabase نشطة', 'Supabase Connected') : t('جدول products في Supabase', 'Supabase products table')}</span>
+            </span>
+          </div>
+          <p className="text-xs text-slate-500">{t('جلب وحفظ وتعديل المنتجات مباشرة من وإلى جدول products في Supabase', 'Fetch, add, edit, and delete products directly via Supabase')}</p>
         </div>
 
         <button

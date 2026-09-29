@@ -20,6 +20,13 @@ import { staticReviews } from '../data/staticReviews.js';
 import { staticGallery } from '../data/staticGallery.js';
 import { staticSettings, staticGovernates, staticFAQ } from '../data/staticSettings.js';
 import { safeFetchJson } from '../utils/safeFetch.js';
+import {
+  supabase,
+  isSupabaseConfigured,
+  mapRowToProduct,
+  getSnakeCasePayload,
+  getCamelCasePayload
+} from '../supabaseClient.js';
 
 const BASE_URL = '/api';
 
@@ -246,7 +253,7 @@ export const api = {
   },
 
   // ============================================================
-  // Products (Static Data First)
+  // Products (Direct Supabase Integration)
   // ============================================================
   getProducts: async (params?: {
     category?: string;
@@ -257,6 +264,55 @@ export const api = {
     featured?: boolean;
     importedEconomy?: boolean;
   }): Promise<Product[]> => {
+    // 1. Primary Source: Fetch directly from Supabase 'products' table
+    try {
+      let query = supabase.from('products').select('*');
+
+      if (params?.category && params.category !== 'all') {
+        query = query.eq('category', params.category);
+      }
+      if (params?.condition && params.condition !== 'all') {
+        query = query.eq('condition', params.condition);
+      }
+      if (params?.status && params.status !== 'all') {
+        query = query.eq('status', params.status);
+      }
+      if (params?.brand && params.brand !== 'all') {
+        query = query.ilike('brand', `%${params.brand}%`);
+      }
+      if (params?.featured) {
+        query = query.or('is_featured.eq.true,isFeatured.eq.true');
+      }
+      if (params?.importedEconomy) {
+        query = query.or('is_imported_economy.eq.true,isImportedEconomy.eq.true');
+      }
+      if (params?.search) {
+        const q = params.search.trim();
+        query = query.or(`name_ar.ilike.%${q}%,name_en.ilike.%${q}%,desc_ar.ilike.%${q}%,nameAr.ilike.%${q}%,nameEn.ilike.%${q}%`);
+      }
+
+      // Order by created_at descending if supported
+      try {
+        query = query.order('created_at', { ascending: false });
+      } catch {}
+
+      const { data, error } = await query;
+
+      if (!error && Array.isArray(data)) {
+        const mappedProducts = data.map(mapRowToProduct);
+        // When Supabase responds with records or is explicitly configured, use it as primary truth
+        if (mappedProducts.length > 0 || isSupabaseConfigured()) {
+          setLocalData('invercool_products', mappedProducts);
+          return mappedProducts;
+        }
+      } else if (error) {
+        console.warn('[Supabase Products] Fetch returned error:', error.message);
+      }
+    } catch (sbErr) {
+      console.warn('[Supabase Products] Connection/Query error:', sbErr);
+    }
+
+    // 2. Secondary Fallback: Backend API
     try {
       const query = new URLSearchParams();
       if (params?.category) query.set('category', params.category);
@@ -272,11 +328,9 @@ export const api = {
         setLocalData('invercool_products', data);
         return data;
       }
-    } catch {
-      // Fallback to static
-    }
+    } catch {}
 
-    // Filter products from local cache or static
+    // 3. Resilient Fallback: Local Cache / Static Data
     const baseList = getLocalData<Product[]>('invercool_products') || staticProducts;
     let list = [...baseList];
     if (params?.category && params.category !== 'all') {
@@ -304,96 +358,230 @@ export const api = {
   },
 
   getProduct: async (idOrSlug: string): Promise<Product> => {
+    // 1. Direct query to Supabase
+    try {
+      const { data: byId, error: errId } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', idOrSlug)
+        .maybeSingle();
+
+      if (!errId && byId) {
+        return mapRowToProduct(byId);
+      }
+
+      const { data: bySlug, error: errSlug } = await supabase
+        .from('products')
+        .select('*')
+        .eq('slug', idOrSlug)
+        .maybeSingle();
+
+      if (!errSlug && bySlug) {
+        return mapRowToProduct(bySlug);
+      }
+    } catch (sbErr) {
+      console.warn('[Supabase getProduct] Query error:', sbErr);
+    }
+
+    // 2. Fallback to Backend API
     try {
       const res = await fetch(`${BASE_URL}/products/${encodeURIComponent(idOrSlug)}`);
       if (res.ok) return res.json();
-    } catch {
-      // Fallback
-    }
+    } catch {}
+
+    // 3. Fallback to Local Cache / Static
     const list = getLocalData<Product[]>('invercool_products') || staticProducts;
-    const found = list.find(
-      (p) => p.slug === idOrSlug || p.id === idOrSlug
-    );
+    const found = list.find((p) => p.slug === idOrSlug || p.id === idOrSlug);
     if (found) return found;
     return staticProducts[0];
   },
 
   createProduct: async (product: Partial<Product>): Promise<Product> => {
-    let created: Product | null = null;
-    try {
-      const res = await fetch(`${BASE_URL}/products`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(product)
-      });
-      if (res.ok) created = await res.json();
-    } catch {
-      // Fallback
-    }
-    const newProduct: Product = created || {
-      id: `prod-${Date.now()}`,
-      slug: product.slug || `product-${Date.now()}`,
+    const newId = product.id || `prod-${Date.now()}`;
+    const newSlug = product.slug || `product-${Date.now()}`;
+    const createdAt = new Date().toISOString();
+
+    const fullProduct: Product = {
+      id: newId,
+      slug: newSlug,
       nameAr: product.nameAr || '',
       nameEn: product.nameEn || '',
       category: product.category || 'تكييف مركزي',
+      brand: product.brand || 'AL-ARRIQI INVERCOOL',
+      model: product.model || '',
+      capacity: product.capacity || '',
       descAr: product.descAr || '',
       descEn: product.descEn || '',
       specifications: product.specifications || {},
       condition: product.condition || 'new',
       status: product.status || 'available',
       price: product.price,
-      showPrice: !!product.showPrice,
+      showPrice: Boolean(product.showPrice),
       mainImage: product.mainImage || '/images/products/vrf-system.jpg',
       additionalImages: product.additionalImages || [],
-      isFeatured: !!product.isFeatured,
-      isImportedEconomy: !!product.isImportedEconomy,
-      createdAt: new Date().toISOString()
+      isFeatured: Boolean(product.isFeatured),
+      isImportedEconomy: Boolean(product.isImportedEconomy),
+      energyConsumption: product.energyConsumption || '',
+      warranty: product.warranty || '',
+      accessories: product.accessories || '',
+      manufacturingYear: product.manufacturingYear || '',
+      notes: product.notes || '',
+      createdAt
     };
+
+    let supabaseCreated: Product | null = null;
+
+    // 1. Direct Insert into Supabase 'products' table
+    try {
+      const snakePayload = getSnakeCasePayload(fullProduct);
+      let { data, error } = await supabase
+        .from('products')
+        .insert([snakePayload])
+        .select()
+        .single();
+
+      // Retry with camelCase payload if undefined column error (e.g. Postgres 42703)
+      if (error && (error.code === '42703' || error.message.includes('column'))) {
+        console.info('[Supabase createProduct] Retrying with camelCase payload...');
+        const camelPayload = getCamelCasePayload(fullProduct);
+        const retryRes = await supabase
+          .from('products')
+          .insert([camelPayload])
+          .select()
+          .single();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
+
+      if (!error && data) {
+        supabaseCreated = mapRowToProduct(data);
+        console.log('[Supabase createProduct] Successfully inserted product:', supabaseCreated.id);
+      } else if (error) {
+        console.error('[Supabase createProduct] Insert error:', error.message, error.details);
+      }
+    } catch (sbErr) {
+      console.error('[Supabase createProduct] Exception during insert:', sbErr);
+    }
+
+    const finalProduct = supabaseCreated || fullProduct;
+
+    // 2. Sync to local storage & backend API
     const list = getLocalData<Product[]>('invercool_products') || [...staticProducts];
-    list.unshift(newProduct);
+    list.unshift(finalProduct);
     setLocalData('invercool_products', list);
-    return newProduct;
+
+    try {
+      fetch(`${BASE_URL}/products`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(finalProduct)
+      }).catch(() => {});
+    } catch {}
+
+    return finalProduct;
   },
 
   updateProduct: async (id: string, product: Partial<Product>): Promise<Product> => {
-    let updatedProduct: Product | null = null;
+    let supabaseUpdated: Product | null = null;
+
+    // 1. Direct Update in Supabase 'products' table
     try {
-      const res = await fetch(`${BASE_URL}/products/${id}`, {
+      const snakePayload = getSnakeCasePayload(product);
+      delete snakePayload.id;
+
+      let { data, error } = await supabase
+        .from('products')
+        .update(snakePayload)
+        .eq('id', id)
+        .select()
+        .single();
+
+      // Retry with camelCase payload if undefined column error
+      if (error && (error.code === '42703' || error.message.includes('column'))) {
+        console.info('[Supabase updateProduct] Retrying with camelCase payload...');
+        const camelPayload = getCamelCasePayload(product);
+        delete camelPayload.id;
+        const retryRes = await supabase
+          .from('products')
+          .update(camelPayload)
+          .eq('id', id)
+          .select()
+          .single();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
+
+      if (!error && data) {
+        supabaseUpdated = mapRowToProduct(data);
+        console.log('[Supabase updateProduct] Successfully updated product:', id);
+      } else if (error) {
+        console.error('[Supabase updateProduct] Update error:', error.message, error.details);
+      }
+    } catch (sbErr) {
+      console.error('[Supabase updateProduct] Exception during update:', sbErr);
+    }
+
+    // 2. Sync with local storage
+    const currentList = getLocalData<Product[]>('invercool_products') || [...staticProducts];
+    const index = currentList.findIndex((p) => p.id === id);
+    let merged: Product;
+
+    if (supabaseUpdated) {
+      merged = supabaseUpdated;
+    } else if (index !== -1) {
+      merged = { ...currentList[index], ...product };
+    } else {
+      const found = staticProducts.find((p) => p.id === id) || staticProducts[0];
+      merged = { ...found, ...product };
+    }
+
+    if (index !== -1) {
+      currentList[index] = merged;
+    } else {
+      currentList.unshift(merged);
+    }
+    setLocalData('invercool_products', currentList);
+
+    // 3. Sync to backend API
+    try {
+      fetch(`${BASE_URL}/products/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(product)
-      });
-      if (res.ok) updatedProduct = await res.json();
-    } catch {
-      // Fallback
-    }
-    const currentList = getLocalData<Product[]>('invercool_products') || [...staticProducts];
-    const index = currentList.findIndex((p) => p.id === id);
-    if (index !== -1) {
-      currentList[index] = { ...currentList[index], ...product };
-      if (!updatedProduct) updatedProduct = currentList[index];
-    } else {
-      const found = staticProducts.find((p) => p.id === id) || staticProducts[0];
-      const merged = { ...found, ...product };
-      currentList.push(merged);
-      if (!updatedProduct) updatedProduct = merged;
-    }
-    setLocalData('invercool_products', currentList);
-    return updatedProduct || { ...staticProducts[0], ...product };
+      }).catch(() => {});
+    } catch {}
+
+    return merged;
   },
 
   deleteProduct: async (id: string): Promise<void> => {
+    // 1. Direct Delete in Supabase 'products' table
     try {
-      await fetch(`${BASE_URL}/products/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      });
-    } catch {
-      // Silently pass
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('[Supabase deleteProduct] Delete error:', error.message, error.details);
+      } else {
+        console.log('[Supabase deleteProduct] Successfully deleted product:', id);
+      }
+    } catch (sbErr) {
+      console.error('[Supabase deleteProduct] Exception during delete:', sbErr);
     }
+
+    // 2. Sync with local cache and backend API
     const currentList = getLocalData<Product[]>('invercool_products') || [...staticProducts];
     const filtered = currentList.filter((p) => p.id !== id);
     setLocalData('invercool_products', filtered);
+
+    try {
+      fetch(`${BASE_URL}/products/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      }).catch(() => {});
+    } catch {}
   },
 
   // ============================================================

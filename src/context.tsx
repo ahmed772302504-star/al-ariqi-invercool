@@ -21,6 +21,7 @@ import { staticProjects } from './data/staticProjects.js';
 import { staticGallery } from './data/staticGallery.js';
 import { staticReviews } from './data/staticReviews.js';
 import { staticSettings, staticFAQ, staticGovernates } from './data/staticSettings.js';
+import { api } from './services/api.js';
 
 interface AppContextType {
   lang: Language;
@@ -40,6 +41,11 @@ interface AppContextType {
   submitTechnician: (data: any) => Promise<{ success: boolean; requestNumber?: string; message?: string }>;
   submitContact: (data: any) => Promise<{ success: boolean; message?: string }>;
   submitReview: (data: any) => Promise<{ success: boolean; message?: string }>;
+  // Product Operations (Direct Supabase)
+  addProduct: (product: Partial<Product>) => Promise<Product>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<Product>;
+  deleteProduct: (id: string) => Promise<void>;
+  refreshProducts: () => Promise<Product[]>;
   // Refresh data
   refreshData: () => Promise<void>;
   // Auth state
@@ -106,7 +112,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ] = await Promise.all([
         safeFetchJson('/api/settings', {}, staticSettings),
         safeFetchJson('/api/services', {}, staticServices),
-        safeFetchJson('/api/products', {}, staticProducts),
+        api.getProducts().catch(() => staticProducts),
         safeFetchJson('/api/projects', {}, staticProjects),
         safeFetchJson('/api/gallery', {}, staticGallery),
         safeFetchJson('/api/reviews', {}, staticReviews),
@@ -234,6 +240,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // -------------------------------------------------------------
+  // Direct Supabase Product Operations
+  // -------------------------------------------------------------
+  const refreshProducts = async (): Promise<Product[]> => {
+    try {
+      const list = await api.getProducts();
+      setProducts(list);
+      return list;
+    } catch {
+      return products;
+    }
+  };
+
+  const addProduct = async (productData: Partial<Product>): Promise<Product> => {
+    const created = await api.createProduct(productData);
+    setProducts((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+    return created;
+  };
+
+  const updateProduct = async (id: string, productData: Partial<Product>): Promise<Product> => {
+    const updated = await api.updateProduct(id, productData);
+    setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+    return updated;
+  };
+
+  const deleteProduct = async (id: string): Promise<void> => {
+    await api.deleteProduct(id);
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -253,6 +289,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         submitTechnician,
         submitContact,
         submitReview,
+        addProduct,
+        updateProduct,
+        deleteProduct,
+        refreshProducts,
         refreshData,
         adminToken,
         adminUser,
