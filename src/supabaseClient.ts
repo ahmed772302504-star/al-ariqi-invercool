@@ -111,7 +111,7 @@ export function mapRowToProduct(row: any): Product {
 
   // Absolute priority to cloud URL (ImgBB etc.) and eliminate old local default
   const resolvedImg = resolveCloudImage(row);
-  const finalImage = resolvedImg || '/images/products/vrf-system.jpg';
+  const finalImage = resolvedImg || '';
 
   return {
     id: String(row.id || ''),

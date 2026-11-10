@@ -183,9 +183,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <img
                   src={value}
                   alt="Preview"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/logo-icon.png';
+                    // Avoid falling back to local icon so user knows the image URL failed or is loading
+                    (e.target as HTMLImageElement).classList.add('opacity-40');
                   }}
                 />
                 <button

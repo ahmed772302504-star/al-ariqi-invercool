@@ -99,6 +99,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, navi
               <img
                 src={selectedImage || '/images/products/vrf-system.jpg'}
                 alt={product.nameAr}
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/images/products/vrf-system.jpg';
@@ -144,7 +146,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ slug, navi
                       selectedImage === img ? 'border-[#C87D55] scale-105 shadow' : 'border-slate-200 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt={`thumb-${idx}`} className="w-full h-full object-cover" />
+                    <img
+                      src={img}
+                      alt={`thumb-${idx}`}
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>

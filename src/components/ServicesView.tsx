@@ -80,6 +80,8 @@ export const ServicesView: React.FC<ServicesProps> = ({
                 <img
                   src={srv.image}
                   alt={srv.titleAr}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                 />
@@ -141,6 +143,8 @@ export const ServicesView: React.FC<ServicesProps> = ({
                 <img
                   src={selectedService.image}
                   alt={selectedService.titleAr}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                   className="w-full h-full object-cover"
                 />
                 <button

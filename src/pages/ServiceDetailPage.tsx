@@ -76,6 +76,8 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({ slug, navi
           <img
             src={service.image || '/images/gallery/gallery-chiller-service.jpg'}
             alt={language === 'ar' ? service.titleAr : service.titleEn}
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
             className="w-full h-full object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/images/gallery/gallery-chiller-service.jpg';

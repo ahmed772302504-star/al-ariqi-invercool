@@ -403,6 +403,8 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ navigate }) => {
                   <img
                     src={product.mainImage || '/images/products/vrf-system.jpg'}
                     alt={language === 'ar' ? product.nameAr : product.nameEn}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                     onError={(e) => {

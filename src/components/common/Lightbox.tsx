@@ -151,6 +151,8 @@ export const Lightbox: React.FC<LightboxProps> = ({
             <img
               src={currentImage}
               alt={title || 'معاينة العمل'}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
               className="max-w-full max-h-[72vh] object-contain rounded-2xl shadow-2xl ring-1 ring-white/10"
               loading="lazy"
             />
@@ -191,6 +193,8 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 <img
                   src={img}
                   alt={`Thumbnail ${idx + 1}`}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                   className="w-full h-full object-cover"
                 />
               </button>
